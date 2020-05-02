@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
-"""This is utility folder that contains useful functions"""
+"""Top-level package for GwasJP."""
 
-from . import statFittings
+__author__ = """Jianying Li"""
+__email__ = 'jianying.li@gmail.com'
+__version__ = '0.0.1'
