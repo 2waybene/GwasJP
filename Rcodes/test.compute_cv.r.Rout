@@ -1,0 +1,1136 @@
+
+R version 3.2.2 (2015-08-14) -- "Fire Safety"
+Copyright (C) 2015 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> rm(list=ls())
+> 
+> require(data.table)
+Loading required package: data.table
+> debug <- FALSE
+> debug <- TRUE
+> if (debug){
++     path <- '~/data/accord/data/analysis/icaps/icaps.thiazide.all_races/'
++     setwd('~/data/accord/data/analysis/')
++     chr<-8
++     chunk<-1
++ }else{
++     args <- commandArgs(T)
++     path <- args[1]
++     chr <- args[2]
++     chunk <- args[3]   
++ }
+> 
+> 
+> # Check if imputed genotype file exists
+> f_gz<-paste0("../imputation/outputs/chr",chr,".imputed.",chunk,".gz")
+> if (!file.exists(f_gz)) {
++   cat("File",f_gz,"does not exist\n")
++   quit()
++ }
+> 
+> if (debug){
++     f_gz2<-paste0("../imputation/outputs/test/chr",chr,".imputed.",chunk,"")
++ }
+> 
+> # Parameters
+> info_threshold<-0.5
+> read_size<-1000
+> 
+> # Models to fit
+> models<-unlist(read.table(paste0(path,"/pheno_data/models.txt"),stringsAsFactors=F))
+> phenos<-sapply(strsplit(models,"~"),"[",1)
+> 
+> # Load phenotype
+> source("bin/load_pheno_data.r")
+> pheno_data<-load_pheno_data(path)
+> 
+> # read in model types
+> model.types <- unlist(read.table(paste0(path,"/modeltypes.txt"),stringsAsFactors=F))
+> 
+> # Get list of samples with no NA
+> retained_samples<-complete.cases(pheno_data)
+> 
+> # Initialize variables for HWE computation
+> n_obs<-sum(retained_samples)
+> O<-c(0,0,0)
+> E<-c(0,0,0)
+> 
+> #check for snps in list
+> snp.index <- NULL
+> if(file.exists(file.path(path,"snp_list.txt"))){
++     print("You have a snp_list.txt file!!!")
++   snp.list <- read.table(file.path(path,"snp_list.txt"),stringsAsFactors=F)
++   system.time(file.snps<-read.table(pipe(paste0("cut -d ' ' -f2 ../imputation/outputs/chr",chr,".imputed.",chunk,"_info")),header=T,stringsAsFactors=F))
++   snp.index <- which(file.snps[,1]%in%as.character(snp.list[,1]))
++   if(length(snp.index)==0){
++     stop(paste0("No SNP's in snp_list.txt were found in ../imputation/outputs/chr",chr,".imputed.",chunk,"_info"))
++   } else{
++       print("Found it!!!")
++   }
++     
++ }
+> 
+> # Load genotype info metric
+> geno_data_info<-read.table(pipe(paste0("cut -d ' ' -f5 ../imputation/outputs/chr",chr,".imputed.",chunk,"_info")),header=T)
+> geno_data_info<-geno_data_info>info_threshold
+> geno_data_i<-1
+> 
+> # Get index values for the 3 genotypes
+> geno_2_idx<-(1:length(retained_samples))*3
+> geno_1_idx<-geno_2_idx-1
+> geno_0_idx<-geno_2_idx-2
+> 
+> ####################
+> # Initialize output files
+> ####################
+> file_list<-list()
+> for (i in 1:length(phenos)) {
++   file_list[[i]]<-file(paste0(path,"/association_cv/imputed_chunks/chr",chr,".",chunk,".",phenos[i],".assoc"),open="w")
++   if(model.types[i]=="linear"){
++       cat("CHR\tSNP\tBP\tA1\tA2\tFRQ\tHWE_CHI2\tBETA\tSE\tP\n",file=file_list[[i]])
++   }else{
++      cat("CHR\tSNP\tBP\tA1\tA2\tFRQ\tHWE_CHI2\tOR\tSE\tP\n",file=file_list[[i]])
++  }
++ 
++ }
+> 
+> if(!is.null(snp.index)){
++   read.range <- snp.index-1
++   read_size <- 1
++ }else{
++   read.range <- 0:ceiling(1e9/read_size)
++ }
+> 
+> #read_i <- read.range[-1]
+> #read_i <- read.range[length(read.range)]
+> 
+> total.fread.time <- 0
+> total.read.table.time <- 0
+> for (read_i in read.range) {
++     ####################
++     ## Load genotype data
++     ####################
++     ##obj<-try(geno_data<-read.table(gzfile(f_gz),header=F,stringsAsFactors=F,nrow=read_size,skip=read_i*read_size),silent=T)
++     ##if (is(obj, "try-error")) break
++     cat('*****************\n ')
++     cat('fread: ')
++     old <- Sys.time()
++     obj <- try(geno_data<-fread(paste('zcat -c', f_gz),header=F,showProgress=T,nrow=read_size,skip=read_i*read_size),silent=T)
++     ## (is(obj,"try-error")){
++     #    print("error on fread...empty chunk or end of file. Most likely there is not a problem because all files have an end.")
++     #                                    #continue#
++     #}
++     tmp.time <- Sys.time()-old
++     total.fread.time <- total.fread.time + tmp.time
++     cat(tmp.time,'\n')
++     cat('Total fread time = ',total.fread.time,'\n')
++     cat('readtable: ')
++     old <- Sys.time()
++     obj <- try(geno_data<-read.table(gzfile(f_gz),header=F,stringsAsFactors=F,nrow=read_size,skip=read_i*read_size),silent=T)
++     if (is(obj, "try-error")){
++         tmp.time <- Sys.time()-old
++         total.read.table.time <- total.read.table.time + tmp.time
++         print(Sys.time()-old)
++         print("Finished.")
++         cat('Total fread time = ',total.fread.time,'\n')
++         cat('Total read.table time = ',total.read.table.time,'\n')
++         break
++     }
++     tmp.time <- Sys.time()-old
++     total.read.table.time <- total.read.table.time + tmp.time
++     cat(tmp.time,'\n')
++     cat('Total read.table time = ',total.read.table.time,'\n')
++     cat('geno_data # of rows = ',nrow(geno_data),'\n')
++ }
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:04
+35.0858 
+Total fread time =  35.0858 
+readtable: 11.36504 
+Total read.table time =  11.36504 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:04
+34.54365 
+Total fread time =  69.62945 
+readtable: 13.26475 
+Total read.table time =  24.6298 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+35.3095 
+Total fread time =  104.939 
+readtable: 16.36509 
+Total read.table time =  40.99488 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:04
+34.41972 
+Total fread time =  139.3587 
+readtable: 18.29833 
+Total read.table time =  59.29321 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:04
+34.82513 
+Total fread time =  174.1838 
+readtable: 21.24264 
+Total read.table time =  80.53586 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:04
+34.73207 
+Total fread time =  208.9159 
+readtable: 23.49631 
+Total read.table time =  104.0322 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:04
+35.12199 
+Total fread time =  244.0378 
+readtable: 26.31843 
+Total read.table time =  130.3506 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:04
+34.43703 
+Total fread time =  278.4749 
+readtable: 28.67684 
+Total read.table time =  159.0274 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:04
+34.90123 
+Total fread time =  313.3761 
+readtable: 31.29332 
+Total read.table time =  190.3208 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:04
+34.6951 
+Total fread time =  348.0712 
+readtable: 34.12649 
+Total read.table time =  224.4473 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:04
+34.74149 
+Total fread time =  382.8127 
+readtable: 36.51289 
+Total read.table time =  260.9601 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:04
+34.74718 
+Total fread time =  417.5599 
+readtable: 39.11284 
+Total read.table time =  300.073 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:04
+34.86371 
+Total fread time =  452.4236 
+readtable: 42.09719 
+Total read.table time =  342.1702 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:04
+34.82839 
+Total fread time =  487.252 
+readtable: 44.14679 
+Total read.table time =  386.317 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:04
+34.78641 
+Total fread time =  522.0384 
+readtable: 46.42211 
+Total read.table time =  432.7391 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:04
+34.58483 
+Total fread time =  556.6232 
+readtable: 49.01212 
+Total read.table time =  481.7512 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:04
+34.55704 
+Total fread time =  591.1803 
+readtable: 52.18802 
+Total read.table time =  533.9392 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:04
+35.00559 
+Total fread time =  626.1858 
+readtable: 54.48101 
+Total read.table time =  588.4202 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+35.36007 
+Total fread time =  661.5459 
+readtable: 56.34679 
+Total read.table time =  644.767 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+34.78308 
+Total fread time =  696.329 
+readtable: 59.5627 
+Total read.table time =  704.3297 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+35.16152 
+Total fread time =  731.4905 
+readtable: 1.026077 
+Total read.table time =  765.8943 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+34.98082 
+Total fread time =  766.4713 
+readtable: 1.070857 
+Total read.table time =  830.1457 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+35.34345 
+Total fread time =  801.8148 
+readtable: 1.127771 
+Total read.table time =  897.812 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+35.36936 
+Total fread time =  837.1841 
+readtable: 1.188971 
+Total read.table time =  969.1503 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+35.72258 
+Total fread time =  872.9067 
+readtable: 1.214165 
+Total read.table time =  1042 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+36.35597 
+Total fread time =  909.2627 
+readtable: 1.256768 
+Total read.table time =  1117.406 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+35.68079 
+Total fread time =  944.9435 
+readtable: 1.320135 
+Total read.table time =  1196.614 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+35.94638 
+Total fread time =  980.8899 
+readtable: 1.349333 
+Total read.table time =  1277.574 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+36.00085 
+Total fread time =  1016.891 
+readtable: 1.414165 
+Total read.table time =  1362.424 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:06
+36.32833 
+Total fread time =  1053.219 
+readtable: 1.422631 
+Total read.table time =  1447.782 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+35.71086 
+Total fread time =  1088.93 
+readtable: 1.455289 
+Total read.table time =  1535.099 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+35.5673 
+Total fread time =  1124.497 
+readtable: 1.51507 
+Total read.table time =  1626.004 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+35.74835 
+Total fread time =  1160.246 
+readtable: 1.543092 
+Total read.table time =  1718.589 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+35.46706 
+Total fread time =  1195.713 
+readtable: 1.708839 
+Total read.table time =  1821.12 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+35.68127 
+Total fread time =  1231.394 
+readtable: 1.641712 
+Total read.table time =  1919.622 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+35.83812 
+Total fread time =  1267.232 
+readtable: 1.679688 
+Total read.table time =  2020.404 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+35.65045 
+Total fread time =  1302.882 
+readtable: 1.731178 
+Total read.table time =  2124.274 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+35.88615 
+Total fread time =  1338.769 
+readtable: 1.834099 
+Total read.table time =  2234.32 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:06
+38.61737 
+Total fread time =  1377.386 
+readtable: 1.868463 
+Total read.table time =  2346.428 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+36.23888 
+Total fread time =  1413.625 
+readtable: 1.8589 
+Total read.table time =  2457.962 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+35.87458 
+Total fread time =  1449.499 
+readtable: 1.904526 
+Total read.table time =  2572.234 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:06
+36.24753 
+Total fread time =  1485.747 
+readtable: 2.007868 
+Total read.table time =  2692.706 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:06
+36.15307 
+Total fread time =  1521.9 
+readtable: 1.998106 
+Total read.table time =  2812.592 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:06
+36.38816 
+Total fread time =  1558.288 
+readtable: 2.0357 
+Total read.table time =  2934.734 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:05
+35.94337 
+Total fread time =  1594.232 
+readtable: 2.085077 
+Total read.table time =  3059.839 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:06
+36.65633 
+Total fread time =  1630.888 
+readtable: 2.126408 
+Total read.table time =  3187.423 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:06
+36.55278 
+Total fread time =  1667.441 
+readtable: 2.177821 
+Total read.table time =  3318.092 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+37.52736 
+Total fread time =  1704.968 
+readtable: 2.244238 
+Total read.table time =  3452.747 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:06
+36.25492 
+Total fread time =  1741.223 
+readtable: 2.278236 
+Total read.table time =  3589.441 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:06
+36.19968 
+Total fread time =  1777.423 
+readtable: 2.328657 
+Total read.table time =  3729.16 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:06
+36.24145 
+Total fread time =  1813.664 
+readtable: 2.35327 
+Total read.table time =  3870.356 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:06
+36.80945 
+Total fread time =  1850.474 
+readtable: 2.419753 
+Total read.table time =  4015.542 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:06
+36.28758 
+Total fread time =  1886.761 
+readtable: 2.442509 
+Total read.table time =  4162.092 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:06
+36.75113 
+Total fread time =  1923.512 
+readtable: 2.490793 
+Total read.table time =  4311.54 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:06
+36.99072 
+Total fread time =  1960.503 
+readtable: 2.539598 
+Total read.table time =  4463.916 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:06
+37.13324 
+Total fread time =  1997.636 
+readtable: 2.577804 
+Total read.table time =  4618.584 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:06
+36.80587 
+Total fread time =  2034.442 
+readtable: 2.62363 
+Total read.table time =  4776.002 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:06
+36.42955 
+Total fread time =  2070.872 
+readtable: 2.661592 
+Total read.table time =  4935.697 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:06
+36.87406 
+Total fread time =  2107.746 
+readtable: 2.720279 
+Total read.table time =  5098.914 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:06
+36.75281 
+Total fread time =  2144.498 
+readtable: 2.77669 
+Total read.table time =  5265.515 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:06
+37.23259 
+Total fread time =  2181.731 
+readtable: 4.387246 
+Total read.table time =  5528.75 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:10
+50.94436 
+Total fread time =  2232.675 
+readtable: 4.940483 
+Total read.table time =  5825.179 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:09
+51.09648 
+Total fread time =  2283.772 
+readtable: 4.752214 
+Total read.table time =  6110.312 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:10
+51.64343 
+Total fread time =  2335.415 
+readtable: 4.855214 
+Total read.table time =  6401.625 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:09
+49.63937 
+Total fread time =  2385.055 
+readtable: 3.865411 
+Total read.table time =  6633.55 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+37.56003 
+Total fread time =  2422.615 
+readtable: 4.860807 
+Total read.table time =  6925.198 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:10
+49.05802 
+Total fread time =  2471.673 
+readtable: 5.108646 
+Total read.table time =  7231.717 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:10
+49.63047 
+Total fread time =  2521.303 
+readtable: 5.00035 
+Total read.table time =  7531.738 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:09
+49.14728 
+Total fread time =  2570.451 
+readtable: 5.273549 
+Total read.table time =  7848.151 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:09
+50.06405 
+Total fread time =  2620.515 
+readtable: 4.875902 
+Total read.table time =  8140.705 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:10
+49.96135 
+Total fread time =  2670.476 
+readtable: 5.376944 
+Total read.table time =  8463.321 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:10
+50.47321 
+Total fread time =  2720.949 
+readtable: 5.207566 
+Total read.table time =  8775.775 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:09
+49.55092 
+Total fread time =  2770.5 
+readtable: 5.567288 
+Total read.table time =  9109.813 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:10
+51.08048 
+Total fread time =  2821.581 
+readtable: 4.373692 
+Total read.table time =  9372.234 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+37.7451 
+Total fread time =  2859.326 
+readtable: 3.414474 
+Total read.table time =  9577.103 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+37.16788 
+Total fread time =  2896.494 
+readtable: 3.522696 
+Total read.table time =  9788.464 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+37.92659 
+Total fread time =  2934.42 
+readtable: 3.570055 
+Total read.table time =  10002.67 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+38.00179 
+Total fread time =  2972.422 
+readtable: 3.56637 
+Total read.table time =  10216.65 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+37.94291 
+Total fread time =  3010.365 
+readtable: 3.607096 
+Total read.table time =  10433.08 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+38.07277 
+Total fread time =  3048.438 
+readtable: 3.686921 
+Total read.table time =  10654.29 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+38.1014 
+Total fread time =  3086.539 
+readtable: 3.7588 
+Total read.table time =  10879.82 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+38.54342 
+Total fread time =  3125.082 
+readtable: 3.827881 
+Total read.table time =  11109.49 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+37.94195 
+Total fread time =  3163.024 
+readtable: 3.80949 
+Total read.table time =  11338.06 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+37.84975 
+Total fread time =  3200.874 
+readtable: 3.818793 
+Total read.table time =  11567.19 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+37.79522 
+Total fread time =  3238.669 
+readtable: 3.841609 
+Total read.table time =  11797.69 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+38.20803 
+Total fread time =  3276.877 
+readtable: 3.86068 
+Total read.table time =  12029.33 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+38.41932 
+Total fread time =  3315.297 
+readtable: 3.927805 
+Total read.table time =  12264.99 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+38.25033 
+Total fread time =  3353.547 
+readtable: 3.971883 
+Total read.table time =  12503.31 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+38.11254 
+Total fread time =  3391.66 
+readtable: 4.004431 
+Total read.table time =  12743.57 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+38.15953 
+Total fread time =  3429.819 
+readtable: 4.038934 
+Total read.table time =  12985.91 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+37.82414 
+Total fread time =  3467.643 
+readtable: 4.134087 
+Total read.table time =  13233.95 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+38.35116 
+Total fread time =  3505.994 
+readtable: 4.175758 
+Total read.table time =  13484.5 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+39.11199 
+Total fread time =  3545.106 
+readtable: 4.239605 
+Total read.table time =  13738.88 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+38.52897 
+Total fread time =  3583.635 
+readtable: 4.253203 
+Total read.table time =  13994.07 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+38.25599 
+Total fread time =  3621.891 
+readtable: 4.291552 
+Total read.table time =  14251.56 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+38.45076 
+Total fread time =  3660.342 
+readtable: 4.340112 
+Total read.table time =  14511.97 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+38.79478 
+Total fread time =  3699.137 
+readtable: 4.408795 
+Total read.table time =  14776.5 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+39.14481 
+Total fread time =  3738.282 
+readtable: 4.434832 
+Total read.table time =  15042.59 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+38.74119 
+Total fread time =  3777.023 
+readtable: 4.533473 
+Total read.table time =  15314.59 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+38.48357 
+Total fread time =  3815.506 
+readtable: 4.617701 
+Total read.table time =  15591.66 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+38.39402 
+Total fread time =  3853.9 
+readtable: 4.510522 
+Total read.table time =  15862.29 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+39.00725 
+Total fread time =  3892.908 
+readtable: 4.759455 
+Total read.table time =  16147.85 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+39.39984 
+Total fread time =  3932.308 
+readtable: 4.621051 
+Total read.table time =  16425.12 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+38.65012 
+Total fread time =  3970.958 
+readtable: 4.635858 
+Total read.table time =  16703.27 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+38.83867 
+Total fread time =  4009.796 
+readtable: 4.70575 
+Total read.table time =  16985.61 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+39.20201 
+Total fread time =  4048.998 
+readtable: 4.726463 
+Total read.table time =  17269.2 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+38.8465 
+Total fread time =  4087.845 
+readtable: 4.786925 
+Total read.table time =  17556.42 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+38.80525 
+Total fread time =  4126.65 
+readtable: 4.854344 
+Total read.table time =  17847.68 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+39.12103 
+Total fread time =  4165.771 
+readtable: 5.049541 
+Total read.table time =  18150.65 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+39.54823 
+Total fread time =  4205.319 
+readtable: 4.924717 
+Total read.table time =  18446.13 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+39.12226 
+Total fread time =  4244.442 
+readtable: 4.953038 
+Total read.table time =  18743.32 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+39.20038 
+Total fread time =  4283.642 
+readtable: 5.004677 
+Total read.table time =  19043.6 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+39.74044 
+Total fread time =  4323.382 
+readtable: 5.062257 
+Total read.table time =  19347.33 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+39.38473 
+Total fread time =  4362.767 
+readtable: 5.072801 
+Total read.table time =  19651.7 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+39.40442 
+Total fread time =  4402.172 
+readtable: 5.110928 
+Total read.table time =  19958.36 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:09
+39.75225 
+Total fread time =  4441.924 
+readtable: 5.168913 
+Total read.table time =  20268.49 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+39.15689 
+Total fread time =  4481.081 
+readtable: 5.213185 
+Total read.table time =  20581.28 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+39.21397 
+Total fread time =  4520.295 
+readtable: 5.256784 
+Total read.table time =  20896.69 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:09
+40.03914 
+Total fread time =  4560.334 
+readtable: 5.297149 
+Total read.table time =  21214.52 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:09
+40.03312 
+Total fread time =  4600.367 
+readtable: 5.328054 
+Total read.table time =  21534.2 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+39.74856 
+Total fread time =  4640.116 
+readtable: 5.419841 
+Total read.table time =  21859.39 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:09
+40.34042 
+Total fread time =  4680.456 
+readtable: 5.432765 
+Total read.table time =  22185.36 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+39.51296 
+Total fread time =  4719.969 
+readtable: 5.471593 
+Total read.table time =  22513.65 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+39.66087 
+Total fread time =  4759.63 
+readtable: 5.507297 
+Total read.table time =  22844.09 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+39.71811 
+Total fread time =  4799.348 
+readtable: 5.547573 
+Total read.table time =  23176.95 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+39.70786 
+Total fread time =  4839.056 
+readtable: 5.586896 
+Total read.table time =  23512.16 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+39.82507 
+Total fread time =  4878.881 
+readtable: 5.640448 
+Total read.table time =  23850.59 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+39.53942 
+Total fread time =  4918.42 
+readtable: 5.70273 
+Total read.table time =  24192.75 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:08
+39.83457 
+Total fread time =  4958.255 
+readtable: 5.711888 
+Total read.table time =  24535.46 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:09
+40.06854 
+Total fread time =  4998.323 
+readtable: 5.766058 
+Total read.table time =  24881.43 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:09
+39.94685 
+Total fread time =  5038.27 
+readtable: 5.801548 
+Total read.table time =  25229.52 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:09
+40.13142 
+Total fread time =  5078.402 
+readtable: 5.871365 
+Total read.table time =  25581.8 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:09
+40.95731 
+Total fread time =  5119.359 
+readtable: 5.904019 
+Total read.table time =  25936.04 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:09
+39.79405 
+Total fread time =  5159.153 
+readtable: 5.926619 
+Total read.table time =  26291.64 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:09
+40.18419 
+Total fread time =  5199.337 
+readtable: 5.96529 
+Total read.table time =  26649.56 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:09
+39.82564 
+Total fread time =  5239.163 
+readtable: 6.015825 
+Total read.table time =  27010.51 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 1000 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:09
+40.08867 
+Total fread time =  5279.251 
+readtable: 6.086545 
+Total read.table time =  27375.7 
+geno_data # of rows =  1000 
+*****************
+ fread: Read 0.0% of 1000 rowsRead 352 rows and 24707 (of 24707) columns from 6.953 GB file in 00:00:07
+38.93522 
+Total fread time =  5318.187 
+readtable: 6.04715 
+Total read.table time =  27738.53 
+geno_data # of rows =  352 
+*****************
+ fread: 37.45721 
+Total fread time =  5355.644 
+readtable: Time difference of 5.953721 mins
+[1] "Finished."
+Total fread time =  5355.644 
+Total read.table time =  28095.75 
+> 
+> proc.time()
+     user    system   elapsed 
+32606.608   764.495 33453.027 

@@ -1,0 +1,16 @@
+args<-(commandArgs(TRUE))
+path<-args[[1]]
+
+data<-read.table(paste0(path,"/relatedness/king.kin0"), header=T)
+pdf(paste0(path,"/outputs/Kinship_vs_IBS0.pdf"))
+par(mar=c(3.5,3.5,1,1))
+plot(data$IBS0,data$Kinship,col=1,pch=16,cex=0.6,xlab="",ylab="")
+abline(h = 0.3536, col = 1, lty = 3)
+abline(h = 0.1875, col = 1, lty = 3)
+abline(h = 0.1768, col = 2, lty = 2)
+abline(h = 0.0884, col = 1, lty = 3)
+abline(h = 0.0442, col = 1, lty = 3)
+abline(h = 0.0221, col = 1, lty = 3)
+mtext("IBS0",1,line=2)
+mtext("Kinship",2,line=2)
+trash<-dev.off()

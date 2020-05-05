@@ -1,0 +1,109 @@
+####################################################
+## ACCORD Analysis Pipeline.
+## By Daniel Rotroff and John Jack.
+####################################################
+## NOTES: Prior to running any of these commands, please
+## (1) Navigate to the working directory: '/home/accord/data/analysis/'
+## (2) Set up your analysis dirs: See '/home/accord/data/analysis/README.setup.accord.analysis.txt'
+## (3) Set your $pathList variable at command line. See 'bin/update.path.list.txt'
+## (4) You must wait for each step to complete before moving on to the next step (except when otherwise explicitly stated)
+
+##############################################
+##              Model Setup                 ##
+##############################################
+## NOTE: Make sure your phenotype data file is called '/home/accord/data/analysis/pheno_data.txt' before launching step 1
+
+## Step 1
+python bin/launch.model.setup.step1.py "${pathList[@]}"
+
+## Step 2
+python bin/launch.model.setup.step2.py "${pathList[@]}"
+
+##############################################
+## Heritability and Common Variant Analysis ##
+##############################################
+## NOTE: these three analyses are not dependent on eachother and can run simultaneously.
+
+## Estimate Heritability (H2)
+python bin/launch.heritability.analysis.py "${pathList[@]}"
+
+## For Genotype Data: (~4 hours - 1 day) 
+python bin/launch.geno.common.variant.analysis.py "${pathList[@]}"
+
+## For Imputed data: (~ Several days)
+python bin/launch.impu.common.variant.analysis.py "${pathList[@]}"
+for p in ${pathList[@]};do grep Error $p/sbatch_logs/chr*; done;
+
+#############################################
+## Clean up Imputed Analysis Results Files ##
+#############################################
+
+## Merge imputed (all snps/subjects) output chromosome chunks into chr files (input: association_cv/imputed_chunks/*)
+python bin/launch.merge.chunks.py "${pathList[@]}"
+## Check for errors, should see no output. This may not catch all errors.
+for p in ${pathList[@]};do grep Error $p/sbatch_logs/*merge.chunks*; done;
+
+## Merge chromosome results (output from launch.merge.chunks.py) file into single file (input: association_cv/chr[1-22].<phenotype>.assoc)
+python bin/launch.merge.chrs.py "${pathList[@]}"
+## check for errors, should see no output. This may not catch all errors.
+for p in ${pathList[@]};do grep Error $p/sbatch_logs/*merge.chrs*; done;
+
+# Create all files needed for Meta-Analysis
+python bin/launch.create.files.for.meta.analysis.py "${pathList[@]}"
+#check for errors, should see no output This may not catch all errors.
+for p in ${pathList[@]};do grep Error $p/sbatch_logs/create.meta.files*; done;
+
+#############################################
+##        Meta-Analysis using Plink        ##
+#############################################
+
+python bin/launch.meta.analysis.py "${pathList[@]}"
+
+#############################################
+##         Merge/Plot All Results          ##
+#############################################
+
+## Merge all results (GENO, IMPU, META) into single file:
+python bin/launch.merge.all.association.results.py "${pathList[@]}"
+#check for errors, should see no output.
+for p in ${pathList[@]};do grep Error $p/sbatch_logs/merge.all.cv*; done;
+
+# Plot GC vs MAF
+python bin/launch.gc.vs.maf.py "${pathList[@]}"
+
+## Plot QQ/Manhattan
+python bin/launch.qq.manhattan.plot.py "${pathList[@]}" 
+## NEED TO PASS MAF!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FIX
+
+######################
+## UNMODIFIED BELOW ##
+
+## Extract data for visualization in LocusZoom
+for p in ${pathList[@]};do
+sbatch -p short -o %j.out ./bin/run_get_peaks.sh $p $maf
+done;
+
+#Map snps from peak data to genes
+for p in ${pathList[@]};do
+sbatch -p short -o %j.out ./bin/rotroff_scripts/snp_gene_mapping_callR.sh $p
+done;
+
+
+##################################################
+## Rare variant analysis  UNMODIFIED FROM ORIG  ##
+##################################################
+for p in ${pathList[@]};do
+for chr in {1..22};do sbatch -p short -o $p/sbatch_logs/chr${chr}.rv.%j.out ./bin/model_eval_rv.sh $p $chr $maf;done
+done;
+##################################################
+# Combine p-values from suite of RV tests
+for p in ${pathList[@]};do
+while read pheno;do
+  if [ -n "${pheno}" ];then R --slave --vanilla --file=bin/fdr_rv.r --args $p $pheno;fi
+done < $p/phenotypes.txt
+done;
+
+####################################################
+## END ACCORD Analysis Pipeline.
+####################################################
+

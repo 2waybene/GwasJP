@@ -1,0 +1,197 @@
+# Run Simvastatin Targeted
+# 10/11/2019
+# Phenotype File: pheno_data_simvastatin_targeted.txt
+pathList=(simvastatin_targeted/simvastatin_targeted_onSimvaOnly)
+
+# Run Simvastatin Targeted
+# 09/01/2019
+# Phenotype File: pheno_data_simvastatin_targeted.txt
+pathList=(simvastatin_targeted/simvastatin_targeted_allraces2)
+
+# Run Simvastatin Targeted
+# 08/30/2019
+# Phenotype File: pheno_data_simvastatin_targeted.txt
+pathList=(simvastatin_targeted/simvastatin_targeted_allraces)
+
+
+# Run TZD Weight Gain GWAS
+# 11/22/2018
+# Phenotype File: pheno_data_tzd_weight_gain.txt
+pathList=(tzd_weight_gain/tzd_white
+tzd_weight_gain/tzd_black
+tzd_weight_gain/tzd_hispanic)
+
+# Rerun TZD Weight Gain GWAS
+# 10/30/2018
+# Phenotype File: pheno_data_tzd_weight_gain.txt
+pathList=(tzd_weight_gain/tzd_allraces3)
+
+
+# Run TZD Weight Gain GWAS
+# 10/30/2018
+# Phenotype File: pheno_data_tzd_weight_gain.txt
+pathList=(tzd_weight_gain/tzd_allraces2)
+
+# Run TZD GWAS
+# 10/09/2018
+# Phenotype file: pheno_data_tzd.txt
+pathList=(TZD/TZD_allraces
+TZD/TZD_white)
+
+# Run TZD Weight Gain GWAS
+# 10/04/2018
+# Phenotype File: pheno_data_tzd_weight_gain.txt
+pathList=(tzd_weight_gain/tzd_allraces)
+
+#run clustering GWAS
+#3/7/2017
+pathList=(Sulfonylurea/sulf_90d_allraces2)
+
+#run baseline HbA1c
+#4/6/2017
+pathList=(hba1c_blr/hba1c_blr_allraces
+hba1c_blr/hba1c_blr_white
+hba1c_blr/hba1c_blr_black
+hba1c_blr/hba1c_blr_hispanic)
+
+
+####################################################
+## ACCORD Analysis Pipeline.
+## By Daniel Rotroff and John Jack.
+####################################################
+## NOTES: Prior to running any of these commands, please
+## (1) Navigate to the working directory: '/home/accord/data/analysis/'
+## (2) Set up your analysis dirs: See '/home/accord/data/analysis/README.setup.accord.analysis.txt'
+## (3) Set your $pathList variable at command line. See 'bin/update.path.list.txt'
+## (4) You must wait for each step to complete before moving on to the next step (except when otherwise explicitly stated)
+
+##############################################
+##              Model Setup                 ##
+##############################################
+## NOTE: Make sure your phenotype data file is called '/home/accord/data/analysis/pheno_data.txt' before launching step 1
+## Update: File should be named "pheno_data_*****.txt" Step 1 will prompt user for pheno file name
+## Make sure you are in ~/accord/data/analysis when you start running this code
+
+## Step 1
+python bin/launch.model.setup.step1.py "${pathList[@]}"
+
+## Step 2
+python bin/launch.model.setup.step2.py "${pathList[@]}"
+
+##############################################
+## Heritability and Common Variant Analysis ##
+##############################################
+## NOTE: these three analyses are not dependent on each other and can run simultaneously.
+
+## Estimate Heritability (H2)
+python bin/launch.heritability.analysis.py "${pathList[@]}"
+
+## For Genotype Data: (~4 hours - 1 day) 
+python bin/launch.geno.common.variant.analysis.py "${pathList[@]}"
+
+## For Imputed data: (~ Several days)
+python bin/launch.impu.common.variant.analysis.py "${pathList[@]}"
+for p in ${pathList[@]};do grep Error $p/sbatch_logs/chr*; done;
+
+#############################################
+## Clean up Imputed Analysis Results Files ##
+#############################################
+
+## Merge imputed (all snps/subjects) output chromosome chunks into chr files (input: association_cv/imputed_chunks/*)
+python bin/launch.merge.chunks.py "${pathList[@]}"
+## Check for errors, should see no output. This may not catch all errors.
+for p in ${pathList[@]};do grep Error $p/sbatch_logs/*merge.chunks*; done;
+
+## Merge chromosome results (output from launch.merge.chunks.py) file into single file (input: association_cv/chr[1-22].<phenotype>.assoc)
+python bin/launch.merge.chrs.py "${pathList[@]}"
+## check for errors, should see no output. This may not catch all errors.
+for p in ${pathList[@]};do grep Error $p/sbatch_logs/*merge.chrs*; done;
+
+# Create all files needed for Meta-Analysis
+python bin/launch.create.files.for.meta.analysis.py "${pathList[@]}"
+#check for errors, should see no output This may not catch all errors.
+for p in ${pathList[@]};do grep Error $p/sbatch_logs/create.meta.files*; done;
+
+#############################################
+##        Meta-Analysis using Plink        ##
+#############################################
+
+python bin/launch.meta.analysis.py "${pathList[@]}"
+
+#############################################
+##         Merge/Plot All Results          ##
+#############################################
+
+## Merge all results (GENO, IMPU, META) into single file:
+python bin/launch.merge.all.association.results.py "${pathList[@]}"
+#check for errors, should see no output.
+# for p in ${pathList[@]};do grep Error $p/sbatch_logs/merge.all.cv*; done;
+for p in ${pathList[@]};do grep Error $p/sbatch_logs/merge.all.association*; done;
+
+
+# Plot GC vs MAF
+python bin/launch.gc.vs.maf.py "${pathList[@]}"
+
+## Plot QQ/Manhattan
+## Note: R package GenABLE is no longer supporter.  Users may need to install package manually before proceeding.  See /bin/jleirer.scripts/plot_qq_manhattan.r for example
+# python bin/launch.qq.manhattan.plot.py "${pathList[@]}"
+python bin/jleirer.scripts/launch.qq.manhattan.plot.py "${pathList[@]}"
+
+######################
+## UNMODIFIED BELOW ##
+
+maf=.03
+
+## Extract data for visualization in LocusZoom
+for p in ${pathList[@]};do
+sbatch -p standard -o %j.out ./bin/run_get_peaks.sh $p $maf FALSE
+done;
+
+#Map snps from peak data to genes
+for p in ${pathList[@]};do
+sbatch -p short -o %j.out ./bin/jleirer.scripts/snp_gene_mapping_callR.sh $p FALSE
+done;
+
+#sbatch -p short -o %j.out ./bin/snp_gene_mapping_callR.sh $p FALSE
+
+
+##################################################
+## Rare variant analysis  UNMODIFIED FROM ORIG  ##
+##################################################
+for p in ${pathList[@]};do
+for chr in {1..22};do sbatch -p short -o $p/sbatch_logs/chr${chr}.rv.%j.out ./bin/model_eval_rv.sh $p $chr $maf;done
+done;
+##################################################
+# Combine p-values from suite of RV tests
+for p in ${pathList[@]};do
+while read pheno;do
+  if [ -n "${pheno}" ];then R --slave --vanilla --file=bin/fdr_rv.r --args $p $pheno;fi
+done < $p/phenotypes.txt
+done;
+
+####################################################
+## END ACCORD Analysis Pipeline.
+####################################################
+
+
+############################################
+##             Locus Zoom	          ##
+############################################
+
+# Run LocusZoom plot
+# Peak in Chr 16: rs80332660
+# Peak in Chr 5: rs62373187
+
+# Note: You must change the SNP inside of /bin/jleirer.scripts/launch.locuszoom.py (line 21)
+
+python bin/jleirer.scripts/launch.locuszoom.py "${pathList[@]}"
+
+
+# Can run locusZoom from common line on the cluster
+# allChrom_tzd_ch_wt_kg_gc_adj_METAL.tsv
+# all_commonVariantAnalysis_tzd_ch_wt_kg_results_METAL.tsv
+# allChrom_[pheno]_gc_adj_METAL.tsv
+# Choose refsnp based on peak data (see ~/peak_data/[pheno]_snp+gene_mapping.csv
+
+
+
