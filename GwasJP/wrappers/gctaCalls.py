@@ -42,22 +42,3 @@ def align(fastq_1, ref_fn, output_fn, fastq_2=None, p=1):
             '-x', ref_fn,
             '-U', fastq_1,
         ])
-
-
-def build(ref_fn):
-    '''
-    Build Bowtie2 index for reference if none found.
-    '''
-    if not (
-        os.path.isfile(ref_fn + '.1.bt2') and
-        os.path.isfile(ref_fn + '.2.bt2') and
-        os.path.isfile(ref_fn + '.3.bt2') and
-        os.path.isfile(ref_fn + '.4.bt2') and
-        os.path.isfile(ref_fn + '.rev.1.bt2') and
-        os.path.isfile(ref_fn + '.rev.2.bt2')
-    ):
-        inW.quiet_call([
-            inW.PATHS['bowtie2_build'],
-            ref_fn,
-            ref_fn,
-        ])
