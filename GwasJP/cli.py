@@ -1,7 +1,7 @@
 import click
 import sys
-from . import  analysisPipeline
-
+#from . import  analysisPipeline
+from . import accord
 """Console script for accordJP."""
 
 
@@ -13,7 +13,7 @@ def main(args=None):
 @main.command()
 @click.argument('inputdir', type=click.Path(exists=True))
 @click.argument('phenodata', type=str)
-def modelStep1(inputdir, phenodata=None):
+def accordModelStep1(inputdir, phenodata=None):
 
     '''
     Running accordJP pipeline, step 1:
@@ -34,15 +34,13 @@ def modelStep1(inputdir, phenodata=None):
     '''
 
 
-
-
     click.echo(click.format_filename(inputdir))
     click.echo(phenodata)
-    analysisPipeline.launchModelStep1(inputdir, phenodata)
+    accord.modelStep1(inputdir, phenodata)
 
 @main.command()
 @click.argument('inputdir', type=click.Path(exists=True))
-def modelStep2(inputdir):
+def accordModelStep2(inputdir):
 
     """
     Running accordJP pipeline, step 2:
@@ -54,12 +52,12 @@ def modelStep2(inputdir):
     As of this moment, JYL -- FIXME
     """
     click.echo(click.format_filename(inputdir))
-    analysisPipeline.launchModelStep2(inputdir)
+    accord.modelStep1(inputdir)
 
 
 @main.command()
 @click.argument('inputdir', type=click.Path(exists=True))
-def heritability(inputdir):
+def accordHeritability(inputdir):
 
     """
     Run accordJP pipeline,
@@ -73,11 +71,11 @@ def heritability(inputdir):
 
     """
     click.echo(click.format_filename(inputdir))
-    analysisPipeline.launchHeritability(inputdir)
+    accord.heritabilityTest(inputdir)
 
 @main.command()
 @click.argument('inputdir', type=click.Path(exists=True))
-def heritability(inputdir):
+def accordGenoCommVar(inputdir):
 
     """
 
@@ -89,7 +87,7 @@ def heritability(inputdir):
 
     """
     click.echo(click.format_filename(inputdir))
-    analysisPipeline.launchHeritability(inputdir)
+    accord.genoCommondVarAnalysis (inputdir)
 
 
 

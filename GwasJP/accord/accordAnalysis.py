@@ -6,7 +6,7 @@ from ..utils import statFittings
 from ..wrappers import gctaCalls,plinkCalls,smartpcaCalls
 
 
-def accordModelStep1 (filepath, phenotype = "pheno_data.txt"):
+def modelStep1 (filepath, phenotype = "pheno_data.txt"):
 
     print ("****** Begin JOB:' " + str(filepath) + "'")
 
@@ -27,7 +27,7 @@ def accordModelStep1 (filepath, phenotype = "pheno_data.txt"):
     print ("Check the job status with command: squeue ")
 
 
-def accordModelStep2 (filepath):
+def modelStep2 (filepath):
 
     print ("****** Begin JOB:' " + str(filepath) + "'")
 
@@ -51,7 +51,7 @@ def accordModelStep2 (filepath):
     print ("Check the job status with command: squeue ")
 
 
-def accordHeritability (filepath):
+def heritabilityTest (filepath):
 
     print ("****** Begin JOB:' " + str(filepath) + "'")
     #for path in filepath :
@@ -70,7 +70,7 @@ def accordHeritability (filepath):
     print ("Check the job status with command: squeue ")
 
 
-def accordGenoCommondVarAnalysis (filepath):
+def genoCommondVarAnalysis (filepath):
 
     print ("****** Begin JOB:' " + str(filepath) + "'")
     #for path in filepath :
@@ -87,7 +87,7 @@ def accordGenoCommondVarAnalysis (filepath):
     print ("Check the job status with command: squeue ")
 
 
-def accordiImputeCommondVarAnalysis (filepath):
+def imputeCommondVarAnalysis (filepath):
 
     print ("****** Begin JOB:' " + str(filepath) + "'")
     #for path in filepath :

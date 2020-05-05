@@ -3,7 +3,7 @@ import shlex
 import subprocess as sp
 
 from .utils import statFittings
-from .wrappers import bowtie2
+
 
 
 def launchModelStep1 (filepath, phenotype = "pheno_data.txt"):
