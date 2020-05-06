@@ -13,7 +13,7 @@ Requirements
 --------
 GwasJP was developed using Python 3.7.1. In addition to requirements specified in setup.py, GwasJP requires installation of the following tools:
 
-* [plink](http://pngu.mgh.harvard.edu/purcell/plink/)
+* [plink](http://zzz.bwh.harvard.edu/plink/)
 * [smartpca](https://doi.org/10.1371/journal.pgen.0020190)
 * [gcta64](http://cnsgenomics.com/software/gcta)
 
