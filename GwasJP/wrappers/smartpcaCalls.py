@@ -42,3 +42,20 @@ def align(fastq_1, ref_fn, output_fn, fastq_2=None, p=1):
             '-x', ref_fn,
             '-U', fastq_1,
         ])
+
+'''
+smartpca.perl \
+    -i $p/pca/geno.txt \
+    -a $p/pca/snp.txt \
+    -b $p/pca/ind.txt \
+    -k 10 \
+    -o $p/pca/result.pca \
+    -p $p/pca/result.plot \
+    -e $p/pca/result.eval \
+    -l $p/pca/result.log \
+    -m 0 \
+    -t 5 \
+    -s 6.0
+
+'''
+

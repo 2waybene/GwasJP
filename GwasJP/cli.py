@@ -1,5 +1,6 @@
 import click
 import sys
+import os
 #from . import  analysisPipeline
 from . import accord
 """Console script for accordJP."""
@@ -9,11 +10,28 @@ from . import accord
 def main(args=None):
     pass
 
+@main.command()
+@click.option('--shout/--no-shout', default=False)
+def systemInfo(shout):
+    '''
+    Running accordJP pipeline, reporting the operating system.
+
+    Default setting is --no-shout, gives lower case information.
+    When --shout is provide, upper case information will be reported
+
+    '''
+
+    rv = sys.platform
+    if shout:
+        rv = rv.upper() + '!!!!'
+    click.echo("This is your operating system: " + rv + ". Please pay enough attention!")
+
 
 @main.command()
 @click.argument('inputdir', type=click.Path(exists=True))
 @click.argument('phenodata', type=str)
-def accordModelStep1(inputdir, phenodata=None):
+@click.argument('phenoname', type=str)
+def accordModelStep1(inputdir, phenodata=None, phenoname = None):
 
     '''
     Running accordJP pipeline, step 1:
@@ -32,11 +50,14 @@ def accordModelStep1(inputdir, phenodata=None):
     Print PHENODATA from the input or use defaulty: pheno_data.txt
 
     '''
-
-
     click.echo(click.format_filename(inputdir))
     click.echo(phenodata)
-    accord.modelStep1(inputdir, phenodata)
+
+    fullPath = os.path.abspath(inputdir)
+    print ("This is the full path:  " + fullPath)
+
+
+   # accord.modelStep1(fullPath, phenodata, phenoname)
 
 @main.command()
 @click.argument('inputdir', type=click.Path(exists=True))

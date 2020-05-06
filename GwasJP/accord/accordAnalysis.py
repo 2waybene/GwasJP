@@ -6,13 +6,37 @@ from ..utils import statFittings
 from ..wrappers import gctaCalls,plinkCalls,smartpcaCalls
 
 
-def modelStep1 (filepath, phenotype = "pheno_data.txt"):
+def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN"):
 
     print ("****** Begin JOB:' " + str(filepath) + "'")
+    print ("****** This is the phenotype data info:' " + str(phenotype) + "'")
 
     #for path in filepath :
     print ('*************************************')
     print ('This is the working path entered from the user:', str(filepath))
+
+    dir2make = ["association_cv",
+	"association_cv/imputed_chunks",
+	"association_cv/imputed_chunks/imputed_chunks_forMeta",
+	"association_rv",
+	"cluster_plots",
+	"gcta",
+	"outputs",
+	"outputs/gc",
+	"pca",
+	"peak_data",
+	"pheno_data",
+	"relatedness",
+	"sbatch_logs",
+	"reg_plots"]
+
+    dir2make2 = [
+        "reg_plots/" +phenoname + "_call",
+			"reg_plots/" +phenoname + "_call_bar",
+			"reg_plots/" +phenoname + "_dosage",
+			"reg_plots/" +phenoname + "_dosage_bar"
+    ]
+
 
     ## Create system command
 
