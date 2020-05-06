@@ -15,7 +15,7 @@ GwasJP was developed using Python 3.7.1. In addition to requirements specified i
 
 * [plink](http://zzz.bwh.harvard.edu/plink/)
 * [smartpca](https://doi.org/10.1371/journal.pgen.0020190)
-* [gcta64](http://cnsgenomics.com/software/gcta)
+* [GCTA](http://cnsgenomics.com/software/gcta)
 
 
 Installation / Usage
