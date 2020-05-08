@@ -18,6 +18,8 @@ GwasJP was developed using Python 3.7.1. In addition to requirements specified i
 * [smartpca](https://doi.org/10.1371/journal.pgen.0020190)
 * [GCTA](http://cnsgenomics.com/software/gcta)
 
+Most of the computational jobs need to be done on the high performance computer cluster. [SLURM](https://slurm.schedmd.com/documentation.html) cluster management is required and needs to be set up properly.
+
 
 Installation / Usage
 --------------------
