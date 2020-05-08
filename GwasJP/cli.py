@@ -57,7 +57,7 @@ def accordModelStep1(inputdir, phenodata=None, phenoname = None):
     print ("This is the full path:  " + fullPath)
 
 
-   # accord.modelStep1(fullPath, phenodata, phenoname)
+    accord.modelStep1(fullPath, phenodata, phenoname)
 
 @main.command()
 @click.argument('inputdir', type=click.Path(exists=True))

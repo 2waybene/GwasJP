@@ -11,6 +11,7 @@ This project is to help Dr. Motsinger-Reif for her accord clinical trial project
 
 Requirements
 --------
+
 GwasJP was developed using Python 3.7.1. In addition to requirements specified in setup.py, GwasJP requires installation of the following tools:
 
 * [plink](http://zzz.bwh.harvard.edu/plink/)

@@ -1,6 +1,7 @@
 import sys
 import shlex
 import subprocess as sp
+import os
 
 from ..utils import statFittings
 from ..wrappers import gctaCalls,plinkCalls,smartpcaCalls
@@ -15,7 +16,30 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
     print ('*************************************')
     print ('This is the working path entered from the user:', str(filepath))
 
-    dir2make = ["association_cv",
+    creatingDirs (filepath, phenoname)
+    ## replacing model_setup_step1.sh
+
+    ## ON NCSU cluter server
+    cmd = "sbatch -p standard -o " + filepath + "/model_setup_step1.out ./bin/model_setup_step1.sh  " + filepath + " " +   str(phenotype)
+
+    ## prepare a file pheontypes.txt
+    phenotypes = filepath + "/" + "phenotypes.txt"
+    with open(phenotype) as f:
+        f.write(phenoname)
+    f.close()
+
+    ## ON Bionformatic slurm system
+    ## cmd = "srun --partition=bioinfo --cpus-per-task=8 -o  " + filepath + "/model_setup_step1.out ./bin/model_setup_step1.sh  " + filepath +  "  " + str(phenotype)
+    print (cmd)
+   # sp.call(cmd,  shell=True)
+
+
+    print ("Launching model setup step 1:" +  cmd)
+    print ("Check the job status with command: squeue ")
+
+def creatingDirs (filepath, phenoname):
+
+    dirBatch1 = ["association_cv",
 	"association_cv/imputed_chunks",
 	"association_cv/imputed_chunks/imputed_chunks_forMeta",
 	"association_rv",
@@ -30,26 +54,26 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
 	"sbatch_logs",
 	"reg_plots"]
 
-    dir2make2 = [
-        "reg_plots/" +phenoname + "_call",
+    dirBatch2 = [
+            "reg_plots/" +phenoname + "_call",
 			"reg_plots/" +phenoname + "_call_bar",
 			"reg_plots/" +phenoname + "_dosage",
 			"reg_plots/" +phenoname + "_dosage_bar"
     ]
 
+    dirs2make = []
+    for dir in dirBatch1:
+        dirs2make.append(filepath+"/"+dir)
+    for dir in dirBatch2:
+        dirs2make.append(filepath+"/"+dir)
 
-    ## Create system command
-
-    ## ON NCSU cluter server
-    cmd = "sbatch -p standard -o " + filepath + "/model_setup_step1.out ./bin/model_setup_step1.sh  " + filepath + " " +   str(phenotype)
-
-    ## ON Bionformatic slurm system
-    ## cmd = "srun --partition=bioinfo --cpus-per-task=8 -o  " + filepath + "/model_setup_step1.out ./bin/model_setup_step1.sh  " + filepath +  "  " + str(phenotype)
-    print (cmd)
-    sp.call(cmd,  shell=True)
-    print ("Launching model setup step 1:" +  cmd)
-    print ("Check the job status with command: squeue ")
-
+    for dir in dirs2make:
+        if (os.path.isdir(dir) == False):
+            try:
+                os.mkdir(dir)
+                print("Directory '% s' created" % dir)
+            except OSError as error:
+                print(error)
 
 def modelStep2 (filepath):
 
