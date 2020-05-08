@@ -24,6 +24,7 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
 
     ## prepare a file pheontypes.txt
     phenotypes = filepath + "/" + "phenotypes.txt"
+    f = open(phenotypes, 'w')
     with open(phenotype) as f:
         f.write(phenoname)
     f.close()
