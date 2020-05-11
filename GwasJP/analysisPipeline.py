@@ -26,8 +26,8 @@ def launchModelStep1 (filepath, phenotype = "pheno_data.txt"):
     print ("Launching model setup step 1:" +  cmd)
     print ("Check the job status with command: squeue ")
 
-echo;echo "Create complete cases phenotype data (bin/pheno_data_step1.r)"
-R --slave --vanilla --file=bin/pheno_data_step1.r --args $p $2
+    #echo;echo "Create complete cases phenotype data (bin/pheno_data_step1.r)"
+    #R --slave --vanilla --file=bin/pheno_data_step1.r --args $p $2
 
 
 def launchModelStep2 (filepath):

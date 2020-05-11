@@ -28,10 +28,11 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
     f.write(phenoname)
     f.close()
 
+    cmd = "king"
     ## ON Bionformatic slurm system
     ## cmd = "srun --partition=bioinfo --cpus-per-task=8 -o  " + filepath + "/model_setup_step1.out ./bin/model_setup_step1.sh  " + filepath +  "  " + str(phenotype)
     print (cmd)
-   # sp.call(cmd,  shell=True)
+    sp.call(cmd,  shell=True)
 
 
     print ("Launching model setup step 1:" +  cmd)
