@@ -34,6 +34,7 @@ setup(
     keywords='',
    # packages=find_packages(exclude=['docs', 'tests*']),
    # include_package_data=True,
+    #scripts=['bin/king'],
     packages=find_packages(include=['docs', 'tests*', 'GwasdJP', 'GwasJP.wrappers']),
     include_package_data=True,
 
@@ -41,7 +42,7 @@ setup(
     install_requires=install_requires,
     dependency_links=dependency_links,
     author_email='jianying.li@gmail.com',
-        entry_points='''
+    entry_points='''
         [console_scripts]
         GwasJP=GwasJP.cli:main
     '''
