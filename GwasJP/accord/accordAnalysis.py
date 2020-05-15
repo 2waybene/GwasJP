@@ -95,7 +95,11 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
 
     (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, commands)
 
-    cmd =  "sbatch -p standard " + f
+    print (f)
+
+    
+    cmd = "sbatch --partition=bioinfo --cpus-per-task=8 " + f
+
   #  print (cmd)
     sp.call(cmd,  shell=True)
 
