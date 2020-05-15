@@ -51,8 +51,8 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
     keptOut = filepath + "/relatedness/keep.txt"
     #getKeptRelatedness (outputFile, keptOut)
 
-    cmdTemp = "cut -f 1-2 <(tail -n +2 " + outputFile + " ) > " + keptOut
-    sp.call(cmdTemp,  shell=True)
+    cmdTemp = "cut -f 1-2 <(tail -n +2 " + outputFile + ") > " + keptOut
+    sp.call(cmdTemp,  shell=True, executable="/bin/bash")
 
     #cut -f 1-2 <(tail -n +2 $p/pheno_data/pheno_data_step1.txt) > $p/relatedness/keep.txt
 
