@@ -60,7 +60,7 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
 
     #for plink
 
-    bFile = filepath + "/ddn/gs1/home/li11/local/accord/data/geno_data/unc.jj/post_qc.v3"
+    bFile = "/ddn/gs1/home/li11/local/accord/data/geno_data/unc.jj/post_qc.v3"
     outDir = filepath + "/relatedness/data"
 
 
