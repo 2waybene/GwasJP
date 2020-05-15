@@ -49,10 +49,10 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
     sp.call(cmd1,  shell=True)
     # Keep only those samples with phenotype data
     keptOut = filepath + "/relatedness/keep.txt"
-    getKeptRelatedness (outputFile, keptOut)
+    #getKeptRelatedness (outputFile, keptOut)
 
     cmdTemp = "cut -f 1-2 <(tail -n +2 " + outputFile + " ) > " + keptOut
-    sp.call(cmd1,  shell=True)
+    sp.call(cmdTemp,  shell=True)
 
     #cut -f 1-2 <(tail -n +2 $p/pheno_data/pheno_data_step1.txt) > $p/relatedness/keep.txt
 
