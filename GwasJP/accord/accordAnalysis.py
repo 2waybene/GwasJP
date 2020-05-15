@@ -36,7 +36,7 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
     # /ddn/gs1/home/li11/local/accord/bin/pheno_data_step1.r
     outputFile = filepath + "/pheno_data/pheno_data_step1.txt"
 
-    cmd1 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/pheno_data_step1.r --args filepath phenotype outputFile"
+    cmd1 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/pheno_data_step1.r --args " + filepath + " " + phenotype + " " +  outputFile
 
     # echo;echo "Compute relatedness (bin/relatedness.sh)"
     # time ./bin/relatedness.sh $p
@@ -64,17 +64,17 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
     outDir = filepath + "/relatedness/data/"
 
 
-    cmd2 = "plink --bfile bFile --keep keptOut --silent --noweb --recode --make-bed --out  outDirz"
+    cmd2 = "plink --bfile " + bFile + " --keep " + keptOut+ "  --silent --noweb --recode --make-bed --out  " + outDir
 
     bedFile = filepath + "/relatedness/data.bed"
     kPrefix = filepath + "/relatedness/king"
     kLog = filepath + "/relatedness/king.log"
 
-    cmd3 = "king  -b bedFile    --kinship --related --degree 5 --prefix kPrefix > kLog "
+    cmd3 = "king  -b " + bedFile + " --kinship --related --degree 5 --prefix " + kPrefix+ " > " + kLog
 
 # Compute and plot relatedness
-    cmd4 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/relatedness_plot.r  --args filepath"
-    cmd5 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/relatedness_discard.r  --args filepath"
+    cmd4 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/relatedness_plot.r  --args "+ filepath
+    cmd5 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/relatedness_discard.r  --args " + filepath
 
 
 #R --slave --vanilla --file=bin/relatedness_plot.r --args $p
@@ -93,7 +93,7 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
 
     ## create a temporary sbatch file to submit
 
-    (f,d) = createSlurmJob (slurmSbatchFile , jobName, commands)
+    (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, commands)
 
     cmd =  "sbatch -p standard " + f
   #  print (cmd)
