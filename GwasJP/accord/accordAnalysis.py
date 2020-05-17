@@ -153,12 +153,24 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
     genoFile = filepath + "/pca/geno.txt"
 
     cmd10 = "awk '{for (i=5;i<=NF;i=i+2) {j=i+1;v=$i+$j-2;if (v==-2) printf \"%d\",9;else printf \"%d\",v;};printf \"\\n\";}' " + outPrunedTped + " > " + genoFile
-#    sp.call(cmdTemp,  shell=True, executable="/bin/bash")
-
-    #$p/pca/data_pruned.tped > $p/pca/geno.txt
+    #    sp.call(cmdTemp,  shell=True, executable="/bin/bash")
 
 
-    commands = [cmd0,cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,cmd8,cmd9,cmd10]
+    # Compute PCs
+    oPCA =  filepath + "/pca/result.pca"
+    pPCA =  filepath + "/pca/result.plot"
+    ePCA =  filepath + "/pca/result.eval"
+    lPCA =  filepath + "/pca/result.log"
+
+    cmd11 = "smartpca -i " + genoFile + " -a " + snpFile + " -b " + filepath + "/pca/ind.txt" + " -k 10 -o " + oPCA \
+            + " -p " + pPCA + " -e " + ePCA + " -l " + lPCA + " -m 0  -t 5   -s 6.0"
+
+
+
+    # Plot PCs
+    cmd12 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/pca_plot.r --args " + filepath
+
+    commands = [cmd0,cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,cmd8,cmd9,cmd10,cmd11,cmd12]
     jobName = "modelsetupstep1"
     slurmSbatchFile="modelsetupstep1.sh"
 

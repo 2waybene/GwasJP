@@ -28,8 +28,6 @@ def systemInfo(shout):
 
 
 @main.command()
-#@click.argument('rootdir', type=click.Path(exists=True))
-#@click.argument('inputdir', type=click.Path(exists=True))
 @click.argument('rootdir', type=click.Path(exists=True))
 @click.argument('inputdir',  type=str)
 @click.argument('phenodata', type=str)
