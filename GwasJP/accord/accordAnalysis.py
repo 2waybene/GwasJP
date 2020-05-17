@@ -84,6 +84,8 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
 
     ## create a temporary sbatch file to submit
     (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, commands)
+    print (f)
+    print(d)
     cmd = "sbatch --partition=bioinfo --cpus-per-task=8 " + f
     sp.call(cmd,  shell=True)
 
@@ -139,7 +141,7 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
 
     cmdTemp = "awk '{for (i=5;i<=NF;i=i+2) {j=i+1;v=$i+$j-2;if (v==-2) printf \"%d\",9;else printf \"%d\",v;};printf \"\\n\";}' " + outPrunedTped + " > " + genoFile
     sp.call(cmdTemp,  shell=True, executable="/bin/bash")
-    
+
     #$p/pca/data_pruned.tped > $p/pca/geno.txt
 
 
