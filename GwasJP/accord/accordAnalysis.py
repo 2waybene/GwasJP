@@ -78,6 +78,7 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
     ## String the commands get a slurm file to submit to bioinfo cluster
     ##======================================================================
 
+    '''
     commands = [cmd2,cmd3,cmd4,cmd5]
     jobName = "modelsetupstep1"
     slurmSbatchFile="modelsetupstep1.sh"
@@ -87,16 +88,17 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
     print (f)
     print(d)
     cmd = "sbatch --partition=bioinfo --cpus-per-task=8 " + f
-    sp.call(cmd,  shell=True)
-
+    sp.call(cmd,  shell=True) 
+    '''
 
     ##============================================================
+    ##  This needs to wait!!!
     ## command 3-- : used to be time ./bin/pca.sh $p $2
     # echo;echo "Compute relatedness (bin/relatedness.sh)"
     # Now, re-write the file as command 2--
     ##=============================================================
 
-# Filter SNPs in LD
+    # Filter SNPs in LD
     ##=============================================================
     #for two plink analysis
     ##=============================================================
@@ -104,17 +106,19 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
     bFile = filepath + "/relatedness/data"
     rmFile = filepath + "/relatedness/discard.txt"
     outDir = filepath + "/pca/data_maf_r2"
-    cmd = "plink --bfile " + bFile + " --remove " + rmFile+ " --maf 0.01 --indep 50 5 1.5 --silent --noweb --out " + outDir
+    cmd6 = "plink --bfile " + bFile + " --remove " + rmFile+ " --maf 0.01 --indep 50 5 1.5 --silent --noweb --out " + outDir
 
     extractFile = filepath + "/pca/data_maf_r2.prune.in"
     outPruned  = filepath + "/pca/data_pruned"
-    cmd1 = "plink --bfile " + bFile + " --remove " + rmFile+  " --extract " + extractFile+ " --recode12 --transpose --silent --noweb --out" + outPruned
+    cmd7 = "plink --bfile " + bFile + " --remove " + rmFile+  " --extract " + extractFile+ " --recode12 --transpose --silent --noweb --out" + outPruned
 
-    cmd2 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/pca_ind.r  --args " + filepath + " " +  phenotype
+    cmd8 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/pca_ind.r  --args " + filepath + " " +  phenotype
 
     ##======================================================================
     ## String the commands get a slurm file to submit to bioinfo cluster
     ##======================================================================
+
+    '''
 
     commands = [cmd,cmd1,cmd2]
     jobName = "_4PCA"
@@ -125,13 +129,16 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
     cmd = "sbatch --partition=bioinfo --cpus-per-task=8 " + f
     sp.call(cmd,  shell=True)
 
+    '''
+
+
 
 
     outPrunedTped  = filepath + "/pca/data_pruned.tped"
     snpFile = filepath + "/pca/snp.txt"
 
-    cmdTemp = "awk '{print $2\"\\t\"$1\"\\t0.0\\t\"$4}' " +  outPrunedTped + " > " + snpFile
-    sp.call(cmdTemp,  shell=True, executable="/bin/bash")
+    cmd9 = "awk '{print $2\"\\t\"$1\"\\t0.0\\t\"$4}' " +  outPrunedTped + " > " + snpFile
+  #  sp.call(cmdTemp,  shell=True, executable="/bin/bash")
 
     #$p/pca/data_pruned.tped > $p/pca/snp.txt"
 #awk '{for (i=5;i<=NF;i=i+2) {j=i+1;v=$i+$j-2;if (v==-2) printf "%d",9;else printf "%d",v;};printf "\n";}' $p/pca/data_pruned.tped > $p/pca/geno.txt
@@ -139,10 +146,23 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
 
     genoFile = filepath + "/pca/geno.txt"
 
-    cmdTemp = "awk '{for (i=5;i<=NF;i=i+2) {j=i+1;v=$i+$j-2;if (v==-2) printf \"%d\",9;else printf \"%d\",v;};printf \"\\n\";}' " + outPrunedTped + " > " + genoFile
-    sp.call(cmdTemp,  shell=True, executable="/bin/bash")
+    cmd10 = "awk '{for (i=5;i<=NF;i=i+2) {j=i+1;v=$i+$j-2;if (v==-2) printf \"%d\",9;else printf \"%d\",v;};printf \"\\n\";}' " + outPrunedTped + " > " + genoFile
+#    sp.call(cmdTemp,  shell=True, executable="/bin/bash")
 
     #$p/pca/data_pruned.tped > $p/pca/geno.txt
+
+
+    commands = [cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,cmd8,cmd9,cmd10]
+    jobName = "modelsetupstep1"
+    slurmSbatchFile="modelsetupstep1.sh"
+
+    ## create a temporary sbatch file to submit
+    (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, commands)
+    print (f)
+    print(d)
+    cmd = "sbatch --partition=bioinfo --cpus-per-task=8 " + f
+    sp.call(cmd,  shell=True)
+
 
 
 def creatingDirs (filepath, phenoname):
