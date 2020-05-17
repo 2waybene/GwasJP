@@ -28,10 +28,13 @@ def systemInfo(shout):
 
 
 @main.command()
-@click.argument('inputdir', type=click.Path(exists=True))
+#@click.argument('rootdir', type=click.Path(exists=True))
+#@click.argument('inputdir', type=click.Path(exists=True))
+@click.argument('rootdir', type=click.Path(exists=True))
+@click.argument('inputdir',  type=str)
 @click.argument('phenodata', type=str)
 @click.argument('phenoname', type=str)
-def accordModelStep1(inputdir, phenodata=None, phenoname = None):
+def accordModelStep1(rootdir, inputdir=None, phenodata=None, phenoname = None):
 
     '''
     Running accordJP pipeline, step 1:
@@ -50,12 +53,17 @@ def accordModelStep1(inputdir, phenodata=None, phenoname = None):
     Print PHENODATA from the input or use defaulty: pheno_data.txt
 
     '''
+
+    click.echo(click.format_filename(rootdir))
     click.echo(click.format_filename(inputdir))
     click.echo(phenodata)
 
+
+    inputdir = rootdir + "/" + inputdir
     fullPath = os.path.abspath(inputdir)
     print ("This is the full path:  " + fullPath)
 
+    phenodata = rootdir + "/" + phenodata
 
     accord.modelStep1(fullPath, phenodata, phenoname)
 
