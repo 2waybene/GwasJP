@@ -49,13 +49,6 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
     ##=============================================================
 
     keptOut = filepath + "/relatedness/keep.txt"
-    #getKeptRelatedness (outputFile, keptOut)
-
-    '''
-    cmdTemp = "cut -f 1-2 <(tail -n +2 " + outputFile + ") > " + keptOut
-    sp.call(cmdTemp,  shell=True, executable="/bin/bash")
-    '''
-
     cmd1 = "cut -f 1-2 <(tail -n +2 " + outputFile + ") > " + keptOut
     ##=============================================================
     #for plink
@@ -178,7 +171,7 @@ def creatingDirs (filepath, phenoname):
             except OSError as error:
                 print(error)
 
-def modelStep2 (filepath):
+def modelStep2 (filepath, bFile = "/home/accord/data/geno_data/post_qc.unc.uva.merged"):
 
     print ("****** Begin JOB:' " + str(filepath) + "'")
 
@@ -188,18 +181,54 @@ def modelStep2 (filepath):
 
     ## Create system command
 
+    #--file=/ddn/gs1/home/li11/local/accord/bin/pca_plot.r -
+    #echo "Remove designated covars and related individuals. Add first 10 PCs..."
+    # Remove selected covars and related individuals. Add first 10 PCs.
+    cmd1 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/pheno_data_step2.r --args " + filepath
 
-    ## ON NCSU cluter server
+    # Perform log transformation on pheno_data_step2.txt. Creates histograms and replaces vals in d4m cols
+    #R --slave --vanilla --file=bin/rotroff_scripts/log_transform_and_hist_v1.R --args $p
 
-    cmd = 'sbatch -p standard -o '+filepath+'/model_setup_step2.out ./bin/model_setup_step2.sh  '  + filepath
+    #echo "Create modeltypes.txt. If only unique(phenotype values)=2, then logistic model is chosen..."
+    ## Create a file called modeltypes.txt which explains the model type for each line of phenotypes.txt (lm or glm models)
+    cmd2 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/create.model.types.r --args " + filepath
 
-    ## ON Bionformatic slurm system
-    #3 cmd = "srun --partition=bioinfo --cpus-per-task=8 -o  " + filepath + "/model_setup_step2.out ./bin/model_setup_step2.sh  " + filepath
-    print (cmd)
+    #echo "Perform backwards selection on covars..."
+    # Backwards select non-forced covars. Create pheno files for R script, PLINK, and GCTA
+    cmd3 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/covar_backwards_selection_BIC.r --args " + filepath
+
+    #echo "Create samplelist.txt and frequency file..."
+    #    Create sample list and frequency file
+
+    outputFile = filepath + "/pheno_data/pheno_data_step2.txt"
+    sampleList = filepath + "/pheno_data/sample_list.txt"
+
+    cmd4 = "cut -f1,2 <(tail -n +2 " + outputFile + ") > " + sampleList
+    #$p/pheno_data/pheno_data_step2.txt) > $p/pheno_data/sample_list.txt
+   # bFile = "/home/accord/data/geno_data/post_qc.unc.uva.merged"
+
+    plinkCV = filepath + "/association_cv/plink"
+
+    cmd5 = "plink --bfile " + bFile + " --keep " + sampleList + " --silent --freq --out " + plinkCV
+
+    #$p/association_cv/plink
+
+    ##======================================================================
+    ## String the commands get a slurm file to submit to bioinfo cluster
+    ##======================================================================
+
+    commands = [cmd1,cmd2,cmd3,cmd4,cmd5]
+    jobName = "modelsetupstep2"
+    slurmSbatchFile="modelsetupstep2.sh"
+
+    ## create a temporary sbatch file to submit
+    (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, commands)
+    print (f)
+    print(d)
+    cmd = "sbatch --partition=bioinfo --cpus-per-task=8 " + f
     sp.call(cmd,  shell=True)
 
-    print ("Launching model setup step 2:" +  cmd)
-    print ("Check the job status with command: squeue ")
+
 
 
 def heritabilityTest (filepath):
