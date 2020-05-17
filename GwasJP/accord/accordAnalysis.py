@@ -25,7 +25,7 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
     ## prepare a file pheontypes.txt
     phenotypes = filepath + "/" + "phenotypes.txt"
     f = open(phenotypes, 'w')
-    f.write(phenoname)
+    f.write(phenoname + "\n")
     f.close()
 
 
@@ -116,7 +116,7 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
 
     extractFile = filepath + "/pca/data_maf_r2.prune.in"
     outPruned  = filepath + "/pca/data_pruned"
-    cmd7 = "plink --bfile " + bFile + " --remove " + rmFile+  " --extract " + extractFile+ " --recode12 --transpose --silent --noweb --out" + outPruned
+    cmd7 = "plink --bfile " + bFile + " --remove " + rmFile+  " --extract " + extractFile+ " --recode12 --transpose --silent --noweb --out " + outPruned
 
     cmd8 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/pca_ind.r  --args " + filepath + " " +  phenotype
 
