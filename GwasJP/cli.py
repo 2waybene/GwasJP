@@ -66,8 +66,10 @@ def accordModelStep1(rootdir, inputdir=None, phenodata=None, phenoname = None):
     accord.modelStep1(fullPath, phenodata, phenoname)
 
 @main.command()
-@click.argument('inputdir', type=click.Path(exists=True))
-def accordModelStep2(inputdir):
+#@click.argument('inputdir', type=click.Path(exists=True))
+@click.argument('rootdir', type=click.Path(exists=True))
+@click.argument('inputdir',  type=str)
+def accordModelStep2(rootdir, inputdir=None):
 
     """
     Running accordJP pipeline, step 2:
@@ -78,10 +80,15 @@ def accordModelStep2(inputdir):
 
     As of this moment, JYL -- FIXME
     """
+    click.echo(click.format_filename(rootdir))
     click.echo(click.format_filename(inputdir))
-    accord.modelStep1(inputdir)
 
+    inputdir = rootdir + "/" + inputdir
+    fullPath = os.path.abspath(inputdir)
+    print ("This is the full path:  " + fullPath)
 
+    accord.modelStep2(fullPath)
+    
 @main.command()
 @click.argument('inputdir', type=click.Path(exists=True))
 def accordHeritability(inputdir):
