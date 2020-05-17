@@ -35,6 +35,7 @@ def getASLURMJob (jobFile, jobName, cmds, memory = 12000, runTimeallowed = "2-00
         f.write("#SBATCH --mail-user=li11@niehs.nih.gov\n")
         for cmd in cmds:
             f.write( cmd + "\n")
+            f.write ("\n")
     f.close()
     return(file,dir)
 
