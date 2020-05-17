@@ -17,10 +17,10 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
     print ('This is the working path entered from the user:', str(filepath))
 
     creatingDirs (filepath, phenoname)
-    ## replacing model_setup_step1.sh
 
-    ## ON NCSU cluter server
-   # cmd = "sbatch -p standard -o " + filepath + "/model_setup_step1.out ./bin/model_setup_step1.sh  " + filepath + " " +   str(phenotype)
+    ##============================================================
+    ## command 0: replacing model_setup_step1.sh
+    ##============================================================
 
     ## prepare a file pheontypes.txt
     phenotypes = filepath + "/" + "phenotypes.txt"
@@ -28,87 +28,119 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
     f.write(phenoname)
     f.close()
 
-    
-    # echo;echo "Create complete cases phenotype data (bin/pheno_data_step1.r)"
-    # R --slave --vanilla --file=bin/pheno_data_step1.r --args $p $2
+
 
     ##  ON Bioinformatic cluster at NIEHS
-    # /ddn/gs1/home/li11/local/accord/bin/pheno_data_step1.r
+    ##============================================================
+    ## command 1: used to be pheno_data_step1.r
+    ##  Now located: /ddn/gs1/home/li11/local/accord/bin/pheno_data_step1.r
+    ##============================================================
     outputFile = filepath + "/pheno_data/pheno_data_step1.txt"
-
     cmd1 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/pheno_data_step1.r --args " + filepath + " " + phenotype + " " +  outputFile
-
-    # echo;echo "Compute relatedness (bin/relatedness.sh)"
-    # time ./bin/relatedness.sh $p
-    #
-    # echo;echo "Compute PCs (bin/pca.sh)"
-    # time ./bin/pca.sh $p $2
-
-    ##  finished r process and parse the pheno_data_step1.txt for the slurm job
-
     sp.call(cmd1,  shell=True)
-    # Keep only those samples with phenotype data
+
+    ##============================================================
+    ## command 2-- : used to be time ./bin/relatedness.sh $p
+    # echo;echo "Compute relatedness (bin/relatedness.sh)"
+    # Now, re-write the file as command 2--
+    ##=============================================================
+
     keptOut = filepath + "/relatedness/keep.txt"
     #getKeptRelatedness (outputFile, keptOut)
 
     cmdTemp = "cut -f 1-2 <(tail -n +2 " + outputFile + ") > " + keptOut
     sp.call(cmdTemp,  shell=True, executable="/bin/bash")
 
-    #cut -f 1-2 <(tail -n +2 $p/pheno_data/pheno_data_step1.txt) > $p/relatedness/keep.txt
-
-
-
+    ##=============================================================
     #for plink
-
+    ##=============================================================
     bFile = "/ddn/gs1/home/li11/local/accord/data/geno_data/unc.jj/post_qc.v3"
     outDir = filepath + "/relatedness/data"
-
-
     cmd2 = "plink --bfile " + bFile + " --keep " + keptOut+ "  --silent --noweb --recode --make-bed --out  " + outDir
 
+
+    ##=============================================================
+    #for kingship: king
+    ##=============================================================
     bedFile = filepath + "/relatedness/data.bed"
     kPrefix = filepath + "/relatedness/king"
     kLog = filepath + "/relatedness/king.log"
 
     cmd3 = "king  -b " + bedFile + " --kinship --related --degree 5 --prefix " + kPrefix+ " > " + kLog
 
-# Compute and plot relatedness
+    ##=============================================================
+    #for Compute and plot relatedness
+    ##=============================================================
     cmd4 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/relatedness_plot.r  --args "+ filepath
     cmd5 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/relatedness_discard.r  --args " + filepath
 
-
-#R --slave --vanilla --file=bin/relatedness_plot.r --args $p
-
-# Create discard list
-#R --slave --vanilla --file=bin/relatedness_discard.r --args $p
-
-   # cmd = "king"
-    ## ON Bionformatic slurm system
-    ## cmd = "srun --partition=bioinfo --cpus-per-task=8 -o  " + filepath + "/model_setup_step1.out ./bin/model_setup_step1.sh  " + filepath +  "  " + str(phenotype)
+    ##======================================================================
+    ## String the commands get a slurm file to submit to bioinfo cluster
+    ##======================================================================
 
     commands = [cmd2,cmd3,cmd4,cmd5]
     jobName = "modelsetupstep1"
     slurmSbatchFile="modelsetupstep1.sh"
 
-
     ## create a temporary sbatch file to submit
-
     (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, commands)
-
-    print (f)
-
-
     cmd = "sbatch --partition=bioinfo --cpus-per-task=8 " + f
-
-  #  print (cmd)
     sp.call(cmd,  shell=True)
 
 
-  #  print ("Launching model setup step 1:" +  cmd)
-  #  print ("Check the job status with command: squeue ")
+    ##============================================================
+    ## command 3-- : used to be time ./bin/pca.sh $p $2
+    # echo;echo "Compute relatedness (bin/relatedness.sh)"
+    # Now, re-write the file as command 2--
+    ##=============================================================
 
-# def getKeptRelatedness (outputFile, keptOut):
+# Filter SNPs in LD
+    ##=============================================================
+    #for two plink analysis
+    ##=============================================================
 
+    bFile = filepath + "/relatedness/data"
+    rmFile = filepath + "/relatedness/discard.txt"
+    outDir = filepath + "/pca/data_maf_r2"
+    cmd = "plink --bfile " + bFile + " --remove " + rmFile+ " --maf 0.01 --indep 50 5 1.5 --silent --noweb --out " + outDir
+
+    extractFile = filepath + "/pca/data_maf_r2.prune.in"
+    outPruned  = filepath + "/pca/data_pruned"
+    cmd1 = "plink --bfile " + bFile + " --remove " + rmFile+  " --extract " + extractFile+ " --recode12 --transpose --silent --noweb --out" + outPruned
+
+    cmd2 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/pca_ind.r  --args " + filepath + " " +  phenotype
+
+    ##======================================================================
+    ## String the commands get a slurm file to submit to bioinfo cluster
+    ##======================================================================
+
+    commands = [cmd,cmd1,cmd2]
+    jobName = "_4PCA"
+    slurmSbatchFile="m1PCAprep.sh"
+
+    ## create a temporary sbatch file to submit
+    (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, commands)
+    cmd = "sbatch --partition=bioinfo --cpus-per-task=8 " + f
+    sp.call(cmd,  shell=True)
+
+
+
+    outPrunedTped  = filepath + "/pca/data_pruned.tped"
+    snpFile = filepath + "/pca/snp.txt"
+
+    cmdTemp = "awk '{print $2\"\\t\"$1\"\\t0.0\\t\"$4}' " +  outPrunedTped + " > " + snpFile
+    sp.call(cmdTemp,  shell=True, executable="/bin/bash")
+
+    #$p/pca/data_pruned.tped > $p/pca/snp.txt"
+#awk '{for (i=5;i<=NF;i=i+2) {j=i+1;v=$i+$j-2;if (v==-2) printf "%d",9;else printf "%d",v;};printf "\n";}' $p/pca/data_pruned.tped > $p/pca/geno.txt
+#awk '{print $2"\t"$1"\t0.0\t"$4}' $p/pca/data_pruned.tped > $p/pca/snp.txt
+
+    genoFile = filepath + "/pca/geno.txt"
+
+    cmdTemp = "awk '{for (i=5;i<=NF;i=i+2) {j=i+1;v=$i+$j-2;if (v==-2) printf \"%d\",9;else printf \"%d\",v;};printf \"\\n\";}' " + outPrunedTped + " > " + genoFile
+    sp.call(cmdTemp,  shell=True, executable="/bin/bash")
+    
+    #$p/pca/data_pruned.tped > $p/pca/geno.txt
 
 
 def creatingDirs (filepath, phenoname):
