@@ -36,8 +36,11 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
     ##  Now located: /ddn/gs1/home/li11/local/accord/bin/pheno_data_step1.r
     ##============================================================
     outputFile = filepath + "/pheno_data/pheno_data_step1.txt"
+    '''
     cmd1 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/pheno_data_step1.r --args " + filepath + " " + phenotype + " " +  outputFile
     sp.call(cmd1,  shell=True)
+    '''
+    cmd0 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/pheno_data_step1.r --args " + filepath + " " + phenotype + " " +  outputFile
 
     ##============================================================
     ## command 2-- : used to be time ./bin/relatedness.sh $p
@@ -48,9 +51,12 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
     keptOut = filepath + "/relatedness/keep.txt"
     #getKeptRelatedness (outputFile, keptOut)
 
+    '''
     cmdTemp = "cut -f 1-2 <(tail -n +2 " + outputFile + ") > " + keptOut
     sp.call(cmdTemp,  shell=True, executable="/bin/bash")
+    '''
 
+    cmd1 = "cut -f 1-2 <(tail -n +2 " + outputFile + ") > " + keptOut
     ##=============================================================
     #for plink
     ##=============================================================
@@ -152,7 +158,7 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
     #$p/pca/data_pruned.tped > $p/pca/geno.txt
 
 
-    commands = [cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,cmd8,cmd9,cmd10]
+    commands = [cmd0,cmd1,cmd2,cmd3,cmd4,cmd5,cmd6,cmd7,cmd8,cmd9,cmd10]
     jobName = "modelsetupstep1"
     slurmSbatchFile="modelsetupstep1.sh"
 
