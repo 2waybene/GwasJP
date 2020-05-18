@@ -112,9 +112,10 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN",
     ePCA =  filepath + "/pca/result.eval"
     lPCA =  filepath + "/pca/result.log"
 
-    cmd11 = "perl /ddn/gs1/home/li11/local/accord/bin/smartpca.perl -i " + genoFile + " -a " + snpFile + " -b " + filepath + "/pca/ind.txt" + " -k 10 -o " + oPCA \
+    #cmd11 = "perl /ddn/gs1/home/li11/local/accord/bin/smartpca.perl -i " + genoFile + " -a " + snpFile + " -b " + filepath + "/pca/ind.txt" + " -k 10 -o " + oPCA \
+    #        + " -p " + pPCA + " -e " + ePCA + " -l " + lPCA + " -m 0  -t 5   -s 6.0"
+    cmd11 = "smartpca.perl -i " + genoFile + " -a " + snpFile + " -b " + filepath + "/pca/ind.txt" + " -k 10 -o " + oPCA \
             + " -p " + pPCA + " -e " + ePCA + " -l " + lPCA + " -m 0  -t 5   -s 6.0"
-
     # Plot PCs
     cmd12 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/pca_plot.r --args " + filepath
 
