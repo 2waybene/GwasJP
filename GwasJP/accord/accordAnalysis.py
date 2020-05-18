@@ -197,7 +197,10 @@ def modelStep2 (filepath, bFileInit = "/ddn/gs1/home/li11/local/accord/data/geno
 
     #echo "Perform backwards selection on covars..."
     # Backwards select non-forced covars. Create pheno files for R script, PLINK, and GCTA
-    cmd3 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/covar_backwards_selection_BIC.r --args " + filepath
+
+    rSourceFile = "/ddn/gs1/home/li11/local/accord/bin/load_pheno_data.r"
+    cmd3 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/covar_backwards_selection_BIC.r --args " + \
+           filepath + "  " + rSourceFile
 
     #echo "Create samplelist.txt and frequency file..."
     #    Create sample list and frequency file
