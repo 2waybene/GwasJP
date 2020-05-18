@@ -7,7 +7,7 @@ from ..utils import statFittings, createSlurmJob
 from ..wrappers import gctaCalls,plinkCalls,smartpcaCalls
 
 
-def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN"):
+def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN", bFileInit = "/ddn/gs1/home/li11/local/accord/data/geno_data/unc.jj/post_qc.v3"):
 
     print ("****** Begin JOB:' " + str(filepath) + "'")
     print ("****** This is the phenotype data info:' " + str(phenotype) + "'")
@@ -53,9 +53,10 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN")
     ##=============================================================
     #for plink
     ##=============================================================
-    bFile = "/ddn/gs1/home/li11/local/accord/data/geno_data/unc.jj/post_qc.v3"
+   # bFile = "/ddn/gs1/home/li11/local/accord/data/geno_data/unc.jj/post_qc.v3"
+
     outDir = filepath + "/relatedness/data"
-    cmd2 = "plink --bfile " + bFile + " --keep " + keptOut+ "  --silent --noweb --recode --make-bed --out  " + outDir
+    cmd2 = "plink --bfile " + bFileInit + " --keep " + keptOut+ "  --silent --noweb --recode --make-bed --out  " + outDir
 
 
     ##=============================================================
@@ -171,7 +172,7 @@ def creatingDirs (filepath, phenoname):
             except OSError as error:
                 print(error)
 
-def modelStep2 (filepath, bFile = "/home/accord/data/geno_data/post_qc.unc.uva.merged"):
+def modelStep2 (filepath, bFileInit = "/ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged"):
 
     print ("****** Begin JOB:' " + str(filepath) + "'")
 
@@ -209,7 +210,7 @@ def modelStep2 (filepath, bFile = "/home/accord/data/geno_data/post_qc.unc.uva.m
 
     plinkCV = filepath + "/association_cv/plink"
 
-    cmd5 = "plink --bfile " + bFile + " --keep " + sampleList + " --silent --freq --out " + plinkCV
+    cmd5 = "plink --bfile " + bFileInit + " --keep " + sampleList + " --silent --freq --out " + plinkCV
 
     #$p/association_cv/plink
 

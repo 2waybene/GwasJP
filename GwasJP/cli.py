@@ -88,7 +88,7 @@ def accordModelStep2(rootdir, inputdir=None):
     print ("This is the full path:  " + fullPath)
 
     accord.modelStep2(fullPath)
-    
+
 @main.command()
 @click.argument('inputdir', type=click.Path(exists=True))
 def accordHeritability(inputdir):
