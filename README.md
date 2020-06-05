@@ -39,6 +39,13 @@ Prerequisit for the EPR project
 -------------------
 
 * Additional third-party software
+```
+[plink](http://zzz.bwh.harvard.edu/plink/)
+[smartpca](https://doi.org/10.1371/journal.pgen.0020190)
+[GCTA](http://cnsgenomics.com/software/gcta)
+king
+etc.
+```
 * Execution software (R codes etc.)
 * Phenotype data preparation
 * Genotype data
