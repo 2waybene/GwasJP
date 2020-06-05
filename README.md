@@ -53,7 +53,7 @@ Prerequisit for the EPR project
 ### Phenotype data preparation
 ### Genotype data
 ### Statistical modeling
-### Main analysese work flow
+### Main analysis work flow
 
 
 Installation / Usage
