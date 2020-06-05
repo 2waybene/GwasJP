@@ -34,6 +34,18 @@ Example layout will be somthing like:
 <br>
 /homeDir/accord/data/
 
+
+Prerequisit for the EPR project
+-------------------
+
+Additional third-party software
+Execution software (R codes etc.)
+Phenotype data preparation
+Genotype data
+Statistical modeling
+Main analysese work flow
+
+
 Installation / Usage
 --------------------
 
