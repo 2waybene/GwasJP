@@ -38,12 +38,12 @@ Example layout will be somthing like:
 Prerequisit for the EPR project
 -------------------
 
-Additional third-party software
-Execution software (R codes etc.)
-Phenotype data preparation
-Genotype data
-Statistical modeling
-Main analysese work flow
+* Additional third-party software
+* Execution software (R codes etc.)
+* Phenotype data preparation
+* Genotype data
+* Statistical modeling
+* Main analysese work flow
 
 
 Installation / Usage
