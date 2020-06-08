@@ -90,22 +90,37 @@ def accordModelStep2(rootdir, inputdir=None):
     accord.modelStep2(fullPath)
 
 @main.command()
-@click.argument('inputdir', type=click.Path(exists=True))
-def accordHeritability(inputdir):
+#@click.argument('inputdir', type=click.Path(exists=True))
+@click.argument('rootdir', type=click.Path(exists=True))
+@click.argument('inputdir',  type=str)
+@click.option('--samplelist', default= "sample_list.txt", type=str,
+              help='The sample_list.txt is needed for the analysis.')
+@click.option('--thread', default= 8, type=int,
+              help='The defaulty thread is 8')
+def accordHeritability(rootdir, samplelist, thread,   inputdir=None):
 
     """
     Run accordJP pipeline,
     starting heritability analysis.
-
-
 
     As of this moment, JYL -- FIXME
 
     Print INPUTDIR if the directory exists.
 
     """
+    click.echo(click.format_filename(rootdir))
     click.echo(click.format_filename(inputdir))
-    accord.heritabilityTest(inputdir)
+
+    inputdir = rootdir + "/" + inputdir
+    fullPath = os.path.abspath(inputdir)
+    print ("This is the full path:  " + fullPath)
+
+    sampleList = fullPath + "/" + samplelist
+    if (os.path.isfile(sampleList)):
+        accord.heritabilityTest(fullPath, sampleList, thread)
+    else:
+        print ("Sample list file does no exist!\n")
+        exit(1)
 
 @main.command()
 @click.argument('inputdir', type=click.Path(exists=True))

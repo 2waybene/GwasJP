@@ -236,7 +236,7 @@ def modelStep2 (filepath, bFileInit = "/ddn/gs1/home/li11/local/accord/data/geno
 
 
 
-def heritabilityTest (filepath):
+def heritabilityTest (filepath, sampleList, phenotype, p = 8, genoTypeData = "/ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged"):
 
     print ("****** Begin JOB:' " + str(filepath) + "'")
     #for path in filepath :
@@ -245,7 +245,19 @@ def heritabilityTest (filepath):
 
     ## Create system command
 	    ## ON NCSU cluter server
-    cmd = 'sbatch -p standard -o '+filepath+'/sbatch_logs/gcta.out ./bin/run_gcta.sh  ' + filepath
+    cmd = 'sbatch -p standard -o '+ genoTypeData +'  --keep " /sbatch_logs/gcta.out ./bin/run_gcta.sh  ' + filepath
+
+    outputPath = filepath + "/gcta/out"
+    cmd1 = "gcta64 --bfile " + genoTypeData + " --keep " + sampleList + " --autosome --make-grm --out  " + outputPath
+
+    pheno = filepath + "/gcta/pheno_" + phenotype + ".txt"
+    dcov  = filepath + "/gcta/dcovar_" + phenotype + ".txt"
+    qcov  = filepath + "/gcta/qcovar_" + phenotype + ".txt"
+    outdir = filepath + "/gcta/out_" + phenotype
+    cmd2 = "gcta64 --reml --grm " + outputPath + "  --thread-num " + p  + " --pheno " + pheno + " --covar " + dcov \
+    + " --qcovar  " + qcov + "  --out " + outdir
+
+
 
   ## on Bioinfomatic slurm
     ## cmd = "srun --partition=bioinfo --cpus-per-task=8 -o  " + filepath + "/sbatch_logs/gcta.out  ./bin/run_gcta.sh  " + filepath
