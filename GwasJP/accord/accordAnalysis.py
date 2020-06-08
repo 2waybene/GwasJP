@@ -236,7 +236,7 @@ def modelStep2 (filepath, bFileInit = "/ddn/gs1/home/li11/local/accord/data/geno
 
 
 
-def heritabilityTest (filepath, sampleList, phenotype, p = 8, genoTypeData = "/ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged"):
+def heritabilityTest (filepath, sampleList, phenotype,  p = 8, genoTypeData = "/ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged"):
 
     print ("****** Begin JOB:' " + str(filepath) + "'")
     #for path in filepath :

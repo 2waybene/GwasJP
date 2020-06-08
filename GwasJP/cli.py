@@ -93,11 +93,12 @@ def accordModelStep2(rootdir, inputdir=None):
 #@click.argument('inputdir', type=click.Path(exists=True))
 @click.argument('rootdir', type=click.Path(exists=True))
 @click.argument('inputdir',  type=str)
+@click.argument('phenoname', type=str)
 @click.option('--samplelist', default= "sample_list.txt", type=str,
               help='The sample_list.txt is needed for the analysis.')
 @click.option('--thread', default= 8, type=int,
               help='The defaulty thread is 8')
-def accordHeritability(rootdir, samplelist, thread,   inputdir=None):
+def accordHeritability(rootdir, samplelist, phenoname, thread, inputdir=None):
 
     """
     Run accordJP pipeline,
