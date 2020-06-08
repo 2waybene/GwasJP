@@ -115,7 +115,7 @@ def accordHeritability(rootdir, samplelist, thread,   inputdir=None):
     fullPath = os.path.abspath(inputdir)
     print ("This is the full path:  " + fullPath)
 
-    sampleList = fullPath + "/" + samplelist
+    sampleList = fullPath + "/pheno_data/" + samplelist
     if (os.path.isfile(sampleList)):
         accord.heritabilityTest(fullPath, sampleList, thread)
     else:
