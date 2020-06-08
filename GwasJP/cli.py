@@ -118,7 +118,7 @@ def accordHeritability(rootdir, samplelist, phenoname, thread, inputdir=None):
 
     sampleList = fullPath + "/pheno_data/" + samplelist
     if (os.path.isfile(sampleList)):
-        accord.heritabilityTest(fullPath, sampleList, thread)
+        accord.heritabilityTest(fullPath, sampleList, phenoname, thread)
     else:
         print ("Sample list file does no exist!\n")
         exit(1)
