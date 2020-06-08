@@ -258,6 +258,17 @@ def heritabilityTest (filepath, sampleList, phenotype, p = 8, genoTypeData = "/d
     + " --qcovar  " + qcov + "  --out " + outdir
 
 
+    commands = [cmd1,cmd2]
+    jobName = "heritability"
+    slurmSbatchFile="accordHeritability.sh"
+
+    ## create a temporary sbatch file to submit
+    (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, commands)
+    print (f)
+    print(d)
+    cmd = "sbatch --partition=bioinfo --cpus-per-task=8 " + f
+    sp.call(cmd,  shell=True)
+
 
   ## on Bioinfomatic slurm
     ## cmd = "srun --partition=bioinfo --cpus-per-task=8 -o  " + filepath + "/sbatch_logs/gcta.out  ./bin/run_gcta.sh  " + filepath
