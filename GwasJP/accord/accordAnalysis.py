@@ -245,7 +245,7 @@ def heritabilityTest (filepath, sampleList, phenotype,  p = 8, genoTypeData = "/
 
     ## Create system command
 	    ## ON NCSU cluter server
-    cmd = 'sbatch -p standard -o '+ genoTypeData +'  --keep " /sbatch_logs/gcta.out ./bin/run_gcta.sh  ' + filepath
+   # cmd = 'sbatch -p standard -o '+ genoTypeData +'  --keep " /sbatch_logs/gcta.out ./bin/run_gcta.sh  ' + filepath
 
     outputPath = filepath + "/gcta/out"
     cmd1 = "gcta64 --bfile " + genoTypeData + " --keep " + sampleList + " --autosome --make-grm --out  " + outputPath
@@ -253,8 +253,8 @@ def heritabilityTest (filepath, sampleList, phenotype,  p = 8, genoTypeData = "/
     pheno = filepath + "/gcta/pheno_" + phenotype + ".txt"
     dcov  = filepath + "/gcta/dcovar_" + phenotype + ".txt"
     qcov  = filepath + "/gcta/qcovar_" + phenotype + ".txt"
-    outdir = filepath + "/gcta/out_" + phenotype
-    cmd2 = "gcta64 --reml --grm " + outputPath + "  --thread-num " + p  + " --pheno " + pheno + " --covar " + dcov \
+    outdir = filepath + "/gcta/out_"   + phenotype
+    cmd2 = "gcta64 --reml --grm " + outputPath + "  --thread-num " +  str(p)  + " --pheno " + pheno + " --covar " + dcov \
     + " --qcovar  " + qcov + "  --out " + outdir
 
 

@@ -63,10 +63,10 @@ def accordModelStep1(rootdir, inputdir=None, phenodata=None, phenoname = None):
 
     phenodata = rootdir + "/" + phenodata
 
+    ## Kick off main analysis
     accord.modelStep1(fullPath, phenodata, phenoname)
 
 @main.command()
-#@click.argument('inputdir', type=click.Path(exists=True))
 @click.argument('rootdir', type=click.Path(exists=True))
 @click.argument('inputdir',  type=str)
 def accordModelStep2(rootdir, inputdir=None):
@@ -90,7 +90,6 @@ def accordModelStep2(rootdir, inputdir=None):
     accord.modelStep2(fullPath)
 
 @main.command()
-#@click.argument('inputdir', type=click.Path(exists=True))
 @click.argument('rootdir', type=click.Path(exists=True))
 @click.argument('inputdir',  type=str)
 @click.argument('phenoname', type=str)
@@ -111,6 +110,7 @@ def accordHeritability(rootdir, samplelist, phenoname, thread, inputdir=None):
     """
     click.echo(click.format_filename(rootdir))
     click.echo(click.format_filename(inputdir))
+    click.echo(click.format_filename(phenoname))
 
     inputdir = rootdir + "/" + inputdir
     fullPath = os.path.abspath(inputdir)
