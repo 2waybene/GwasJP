@@ -266,14 +266,16 @@ def heritabilityTest (filepath, sampleList, phenotype,  p = 8, genoTypeData = "/
     (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, commands)
     print (f)
     print(d)
+
     cmd = "sbatch --partition=bioinfo --cpus-per-task=8 " + f
     sp.call(cmd,  shell=True)
 
 
+
   ## on Bioinfomatic slurm
     ## cmd = "srun --partition=bioinfo --cpus-per-task=8 -o  " + filepath + "/sbatch_logs/gcta.out  ./bin/run_gcta.sh  " + filepath
-    print (cmd)
-    sp.call(cmd,  shell=True)
+ #   print (cmd)
+ #   sp.call(cmd,  shell=True)
     print ("Launching launchHeritability step 1 of 3:" + cmd)
     print ("Check the job status with command: squeue ")
 
