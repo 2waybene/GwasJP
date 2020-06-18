@@ -279,8 +279,58 @@ def heritabilityTest (filepath, sampleList, phenotype,  p = 8, genoTypeData = "/
     print ("Launching launchHeritability step 1 of 3:" + cmd)
     print ("Check the job status with command: squeue ")
 
+def common_variant_analysis_genotyped (filepath, phenosFile, modelsFile, snplistFile = None):
 
-def genoCommondVarAnalysis (filepath):
+
+
+    '''
+    Current working path: RHTN_testRun/rhtn_combined/
+    Launching logistic model for phenotype RHTN:
+    sbatch -p bigmem -o RHTN_testRun/rhtn_combined//sbatch_logs/chr0.RHTN.out ./bin/model.eval.cv.genotyped.sh RHTN_testRun/rhtn_combined/ RHTN logistic False
+    Submitted batch job 1498222
+
+    '''
+    print ("****** Begin JOB: Genotyped Common Variant Analysis  ******")
+    print ("Here is the file path:  " + str(filepath) )
+
+    phenos = [line.strip() for line in open(phenosFile, 'r')]
+    models = [line.strip() for line in open(modelsFile, 'r')]
+    snplist =  os.path.isfile(snplistFile)
+
+    commands =[]
+
+    ## For each phenotype/modeltype, launch common variant analysis
+    for i,pheno in enumerate(phenos):
+            ## modeltype is passed as a parameter to the bash script
+
+            print ("This is this the i:  " + str(i))
+            print ("This is the phenotype: " + pheno )
+            '''
+            
+            cmd = ' '.join(('sbatch -p bigmem -o '+filepath+'/sbatch_logs/chr0.'+pheno+'.out ./bin/model.eval.cv.genotyped.sh',
+                                filepath,pheno,models[i],str(snplist)))
+            print 'Launching',models[i],'model for phenotype',pheno+':\n',cmd
+            ## Split cmd for shell
+
+                (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, commands)
+                print (f)
+                print(d)
+
+            split_cmd = shlex.split(cmd)
+            ## Launch command
+            sp.call(split_cmd)#,stdout=log_file,stderr=logerr_file)
+    ## Create system command
+            '''
+
+    # cmd = 'sbatch -p standard -o '+path+'/sbatch_logs/gcta.out ./bin/run_gcta.sh',path))
+    cmd = "place holder"
+    print (cmd)
+   # sp.call(cmd,  shell=True)
+    print ("Launching impute common variant analysis  step 3 of 3:" + cmd)
+    print ("Check the job status with command: squeue ")
+
+
+def common_variant_analysis_imputed (filepath):
 
     print ("****** Begin JOB:' " + str(filepath) + "'")
     #for path in filepath :
@@ -297,18 +347,3 @@ def genoCommondVarAnalysis (filepath):
     print ("Check the job status with command: squeue ")
 
 
-def imputeCommondVarAnalysis (filepath):
-
-    print ("****** Begin JOB:' " + str(filepath) + "'")
-    #for path in filepath :
-    print ('*************************************')
-    print ('This is the working path entered from the user:', str(filepath))
-
-    ## Create system command
-
-    # cmd = 'sbatch -p standard -o '+path+'/sbatch_logs/gcta.out ./bin/run_gcta.sh',path))
-    cmd = "place holder"
-    print (cmd)
-    sp.call(cmd,  shell=True)
-    print ("Launching impute common variant analysis  step 3 of 3:" + cmd)
-    print ("Check the job status with command: squeue ")

@@ -124,8 +124,16 @@ def accordHeritability(rootdir, samplelist, phenoname, thread, inputdir=None):
         exit(1)
 
 @main.command()
-@click.argument('inputdir', type=click.Path(exists=True))
-def accordGenoCommVar(inputdir):
+
+# common_variant_analysis_genotyped (filepath, phenosFile, modelsFile, snplistFile = None):
+
+@click.argument('rootdir', type=click.Path(exists=True))
+@click.argument('inputdir',  type=str)
+@click.argument('phenotype', type=click.Path(exists=True))
+@click.argument('modelfile', type=click.Path(exists=True))
+@click.argument('selectedsnp', type=str)
+
+def accordGenoCommVar(rootdir, phenotype, modelfile, inputdir, selectedsnp=None):
 
     """
 
@@ -136,8 +144,17 @@ def accordGenoCommVar(inputdir):
     Print INPUTDIR if the directory exists.
 
     """
+
+    click.echo(click.format_filename(rootdir))
     click.echo(click.format_filename(inputdir))
-    accord.genoCommondVarAnalysis (inputdir)
+    click.echo(click.format_filename(phenotype))
+    click.echo(click.format_filename(modelfile))
+
+    inputdir = rootdir + "/" + inputdir
+    fullPath = os.path.abspath(inputdir)
+    print ("This is the full path:  " + fullPath)
+    click.echo(click.format_filename(inputdir))
+    accord.common_variant_analysis_genotyped (fullPath, phenotype, modelfile, snplistFile = None)
 
 
 
