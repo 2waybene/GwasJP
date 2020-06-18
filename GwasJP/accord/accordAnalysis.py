@@ -293,6 +293,9 @@ def common_variant_analysis_genotyped (filepath, phenosFile, modelsFile, snplist
     print ("****** Begin JOB: Genotyped Common Variant Analysis  ******")
     print ("Here is the file path:  " + str(filepath) )
 
+    phenosFile = filepath + "/" + str(phenosFile)
+    modelsFile = filepath + "/" + str(modelsFile)
+    snplistFile = filepath + "/" + str(snplistFile)
     phenos = [line.strip() for line in open(phenosFile, 'r')]
     models = [line.strip() for line in open(modelsFile, 'r')]
     snplist =  os.path.isfile(snplistFile)

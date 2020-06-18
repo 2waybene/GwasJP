@@ -154,7 +154,8 @@ def accordGenoCommVar(rootdir, phenotype, modelfile, inputdir, selectedsnp=None)
     fullPath = os.path.abspath(inputdir)
     print ("This is the full path:  " + fullPath)
     click.echo(click.format_filename(inputdir))
-    accord.common_variant_analysis_genotyped (fullPath, phenotype, modelfile, snplistFile = None)
+
+    accord.common_variant_analysis_genotyped (fullPath, phenotype, modelfile, selectedsnp)
 
 
 
