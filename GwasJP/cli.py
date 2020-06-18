@@ -129,8 +129,8 @@ def accordHeritability(rootdir, samplelist, phenoname, thread, inputdir=None):
 
 @click.argument('rootdir', type=click.Path(exists=True))
 @click.argument('inputdir',  type=str)
-@click.argument('phenotype', type=click.Path(exists=True))
-@click.argument('modelfile', type=click.Path(exists=True))
+@click.argument('phenotype', type=str)
+@click.argument('modelfile', type=str)
 @click.argument('selectedsnp', type=str)
 
 def accordGenoCommVar(rootdir, phenotype, modelfile, inputdir, selectedsnp=None):
