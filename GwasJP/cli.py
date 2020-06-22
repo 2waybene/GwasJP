@@ -137,7 +137,7 @@ def accordGenoCommVar(rootdir, phenotype, modelfile, inputdir, selectedsnp=None)
 
     """
 
-    Run accordJP pipeline, starting launch heritability test
+    Run accordJP pipeline, "genotyped common variant analysis"
 
     As of this moment, JYL -- FIXME
 

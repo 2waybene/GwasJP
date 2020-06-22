@@ -3,7 +3,7 @@ import shlex
 import subprocess as sp
 import os
 
-from ..utils import statFittings, createSlurmJob
+from ..utils import statFittings, createSlurmJob, model_eval_cv_genotyped
 from ..wrappers import gctaCalls,plinkCalls,smartpcaCalls
 
 
@@ -298,7 +298,7 @@ def common_variant_analysis_genotyped (filepath, phenosFile, modelsFile, snplist
     snplistFile = filepath + "/" + str(snplistFile)
     phenos = [line.strip() for line in open(phenosFile, 'r')]
     models = [line.strip() for line in open(modelsFile, 'r')]
-    snplist =  os.path.isfile(snplistFile)
+   # snplist =  os.path.isfile(snplistFile)
 
     commands =[]
 
@@ -308,28 +308,27 @@ def common_variant_analysis_genotyped (filepath, phenosFile, modelsFile, snplist
 
             print ("This is this the i:  " + str(i))
             print ("This is the phenotype: " + pheno )
-            '''
-            
-            cmd = ' '.join(('sbatch -p bigmem -o '+filepath+'/sbatch_logs/chr0.'+pheno+'.out ./bin/model.eval.cv.genotyped.sh',
-                                filepath,pheno,models[i],str(snplist)))
-            print 'Launching',models[i],'model for phenotype',pheno+':\n',cmd
-            ## Split cmd for shell
+            cmdTemp = model_eval_cv_genotyped (filepath, pheno, models, snplistFile)
+            ##   using Default genotypeFle ="/home/accord/data/geno_data/post_qc.unc.uva.merged")
 
-                (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, commands)
-                print (f)
-                print(d)
+            jobName = "GenotypedCommonVariant" + str(i)
+            slurmSbatchFile="accordHeritability" + str(i) + ".sh"
 
-            split_cmd = shlex.split(cmd)
-            ## Launch command
-            sp.call(split_cmd)#,stdout=log_file,stderr=logerr_file)
-    ## Create system command
-            '''
+            ## create a temporary sbatch file to submit
+            (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, cmdTemp )
+            print (f)
+            print(d)
 
-    # cmd = 'sbatch -p standard -o '+path+'/sbatch_logs/gcta.out ./bin/run_gcta.sh',path))
-    cmd = "place holder"
-    print (cmd)
-   # sp.call(cmd,  shell=True)
-    print ("Launching impute common variant analysis  step 3 of 3:" + cmd)
+            cmd = "sbatch --partition=highmem --cpus-per-task=8 " + f
+            commands.append(cmd)
+
+    #sp.call(cmd,  shell=True)
+    split_cmd = shlex.split(commands)
+    ## Launch command
+    sp.call(split_cmd)#,stdout=log_file,stderr=logerr_file)
+
+
+    print ("Launching impute common variant analysis  step 3 of 3:" + commands)
     print ("Check the job status with command: squeue ")
 
 
