@@ -1,7 +1,9 @@
-##	coverted from model.eval.genotyped.sh
-
 import os
 
+
+
+
+##	coverted from model.eval.genotyped.sh
 def modelEvalCVGenotyped (path, pheno, model, snpList, genotypeFle ="/home/accord/data/geno_data/post_qc.unc.uva.merged"):
 
 	phenoFile = path + "/pheno_data/pheno_" +  str(pheno) + ".txt"

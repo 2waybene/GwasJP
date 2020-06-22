@@ -3,7 +3,7 @@ import shlex
 import subprocess as sp
 import os
 
-from ..utils import statFittings, createSlurmJob, model_eval_cv_genotyped
+from ..utils import statFittings, createSlurmJob, commonVariantAnalysis
 from ..wrappers import gctaCalls,plinkCalls,smartpcaCalls
 
 
@@ -308,7 +308,7 @@ def common_variant_analysis_genotyped (filepath, phenosFile, modelsFile, snplist
 
             print ("This is this the i:  " + str(i))
             print ("This is the phenotype: " + pheno )
-            cmdTemp = model_eval_cv_genotyped (filepath, pheno, models, snplistFile)
+            cmdTemp = commonVariantAnalysis.modelEvalCVGenotyped (filepath, pheno, models, snplistFile)
             ##   using Default genotypeFle ="/home/accord/data/geno_data/post_qc.unc.uva.merged")
 
             jobName = "GenotypedCommonVariant" + str(i)
