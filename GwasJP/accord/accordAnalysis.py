@@ -327,7 +327,7 @@ def common_variant_analysis_genotyped (filepath, phenosFile, modelsFile, snplist
     ## Launch command
     #sp.call(split_cmd)#,stdout=log_file,stderr=logerr_file)
 
-    print ("Launching impute common variant analysis  step 3 of 3:" + commands)
+    print ("Launching impute common variant analysis  step 3 of 3:")
     print ("Check the job status with command: squeue ")
 
     for job in clusterJobs:
