@@ -46,3 +46,5 @@ def modelEvalCVGenotyped (path, pheno, model, snpList, genotypeFle ="/home/accor
 				  " --linear --vif 1000 --maf 0.000001 --1 --ci .95 --pheno " + phenoFile + \
 				  " --covar  " + covarFile + \
 				  " --hide-covar --silent --noweb --out  " + outFile
+
+	return(cmd)
