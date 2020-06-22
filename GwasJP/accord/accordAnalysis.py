@@ -301,7 +301,7 @@ def common_variant_analysis_genotyped (filepath, phenosFile, modelsFile, snplist
    # snplist =  os.path.isfile(snplistFile)
 
     commands =[]
-
+    clusterJobs = []
     ## For each phenotype/modeltype, launch common variant analysis
     for i,pheno in enumerate(phenos):
             ## modeltype is passed as a parameter to the bash script
@@ -318,18 +318,22 @@ def common_variant_analysis_genotyped (filepath, phenosFile, modelsFile, snplist
             (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, cmdTemp )
             print (f)
             print(d)
-
-            cmd = "sbatch --partition=highmem --cpus-per-task=8 " + f
-            commands.append(cmd)
+            clusterJobs.append(f)
+           # cmd = "sbatch --partition=highmem --cpus-per-task=8 " + f
+           # commands.append(cmd)
 
     #sp.call(cmd,  shell=True)
-    split_cmd = shlex.split(commands)
+    #split_cmd = shlex.split(commands)
     ## Launch command
-    sp.call(split_cmd)#,stdout=log_file,stderr=logerr_file)
-
+    #sp.call(split_cmd)#,stdout=log_file,stderr=logerr_file)
 
     print ("Launching impute common variant analysis  step 3 of 3:" + commands)
     print ("Check the job status with command: squeue ")
+
+    for job in clusterJobs:
+            cmd = "sbatch --partition=highmem --cpus-per-task=8 " + job
+            sp.call(cmd,  shell=True)
+
 
 
 def common_variant_analysis_imputed (filepath):
