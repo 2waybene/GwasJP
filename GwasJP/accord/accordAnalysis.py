@@ -308,7 +308,7 @@ def common_variant_analysis_genotyped (filepath, phenosFile, modelsFile, snplist
 
             print ("This is this the i:  " + str(i))
             print ("This is the phenotype: " + pheno )
-            cmdTemp = commonVariantAnalysis.modelEvalCVGenotyped (filepath, pheno, models, snplistFile)
+            cmdTemp = [commonVariantAnalysis.modelEvalCVGenotyped (filepath, pheno, models, snplistFile)]
             ##   using Default genotypeFle ="/home/accord/data/geno_data/post_qc.unc.uva.merged")
 
             jobName = "GenotypedCommonVariant" + str(i)
