@@ -312,7 +312,7 @@ def common_variant_analysis_genotyped (filepath, phenosFile, modelsFile, snplist
             ##   using Default genotypeFle ="/home/accord/data/geno_data/post_qc.unc.uva.merged")
 
             jobName = "GenotypedCommonVariant" + str(i)
-            slurmSbatchFile="accordHeritability" + str(i) + ".sh"
+            slurmSbatchFile="GenotypedCommonVariant" + str(i) + ".sh"
 
             ## create a temporary sbatch file to submit
             (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, cmdTemp )

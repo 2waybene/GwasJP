@@ -11,7 +11,7 @@ def modelEvalCVGenotyped (path, pheno, model, snpList, genotypeFle ="/home/accor
 	outFile   = path + "/association_cv/chr0."  +  str(pheno)
 	extractOrNot =  os.path.isfile(snpList)
 	extractFile = path + str(snpList)
-
+	cmd = ""
 	if (extractOrNot == False):
 		print ("NO selected SNP!\n")
 		if (model == "liner"):
