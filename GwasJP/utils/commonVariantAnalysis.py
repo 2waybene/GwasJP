@@ -26,7 +26,7 @@ def modelEvalCVGenotyped (path, pheno, model, snpList, genotypeFle ="/ddn/gs1/ho
 			print ("Using logistic model for genotpye " + str (pheno) + "\n")
 			print ("2")
 			cmd = "plink --bfile " + genotypeFle + \
-				  " --linear --vif 1000 --maf 0.000001 --1 --ci .95 --pheno " + phenoFile + \
+				  " --logistic --vif 1000 --maf 0.000001 --1 --ci .95 --pheno " + phenoFile + \
 				  " --covar  " + covarFile + \
 				  " --hide-covar --silent --noweb --out  " + outFile
 	else:
@@ -45,7 +45,7 @@ def modelEvalCVGenotyped (path, pheno, model, snpList, genotypeFle ="/ddn/gs1/ho
 			print ("4")
 			cmd = "plink --bfile " + genotypeFle + \
 				  " --extract " + extractFile +\
-				  " --linear --vif 1000 --maf 0.000001 --1 --ci .95 --pheno " + phenoFile + \
+				  " --logistic  --vif 1000 --maf 0.000001 --1 --ci .95 --pheno " + phenoFile + \
 				  " --covar  " + covarFile + \
 				  " --hide-covar --silent --noweb --out  " + outFile
 
