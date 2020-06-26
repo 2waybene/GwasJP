@@ -30,9 +30,9 @@ To successfully run this project, a set of genotype data is needed. They are dev
 
 Example layout will be somthing like:
 
-/homeDir/accord/bin/
+/homeDir/local/accord/bin/
 <br>
-/homeDir/accord/data/
+/homeDir/local/accord/data/
 
 
 Prerequisit for the EPR project
