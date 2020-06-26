@@ -129,7 +129,7 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN",
     slurmSbatchFile="modelsetupstep1.sh"
 
     ## create a temporary sbatch file to submit
-    (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, commands)
+    (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, commands, filepath)
     print (f)
     print(d)
     cmd = "sbatch --partition=bioinfo --cpus-per-task=8 " + f
@@ -227,7 +227,7 @@ def modelStep2 (filepath, bFileInit = "/ddn/gs1/home/li11/local/accord/data/geno
     slurmSbatchFile="modelsetupstep2.sh"
 
     ## create a temporary sbatch file to submit
-    (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, commands)
+    (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, commands, filepath)
     print (f)
     print(d)
     cmd = "sbatch --partition=bioinfo --cpus-per-task=8 " + f
@@ -263,7 +263,7 @@ def heritabilityTest (filepath, sampleList, phenotype,  p = 8, genoTypeData = "/
     slurmSbatchFile="accordHeritability.sh"
 
     ## create a temporary sbatch file to submit
-    (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, commands)
+    (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, commands,filepath)
     print (f)
     print(d)
 
@@ -315,7 +315,7 @@ def common_variant_analysis_genotyped (filepath, phenosFile, modelsFile, snplist
             slurmSbatchFile="GenotypedCommonVariant" + str(i) + ".sh"
 
             ## create a temporary sbatch file to submit
-            (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, cmdTemp )
+            (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, cmdTemp, filepath )
             print (f)
             print(d)
             clusterJobs.append(f)
