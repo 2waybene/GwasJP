@@ -33,7 +33,12 @@ There are a few files need to be prepared outside this project
 - **/rundir/rhtn/rhtn_combined/starting_covars.txt**
 - **/rundir/rhtn/rhtn_combined/phenotypes.txt**
 
-Model step 2
+### Model step 2
+
+- **/rundir/rhtn/ pheno_data_rhtn.txt**
+- **/rundir/rhtn/rhtn_combined/forced_covars.txt**
+- **/rundir/rhtn/rhtn_combined/starting_covars.txt**
+- **/rundir/rhtn/rhtn_combined/phenotypes.txt**
 
 In this package, a set of R codes are included and need to be downloaded and put in a separate bin folder. This "bin" folder needs to be set up properly
 
