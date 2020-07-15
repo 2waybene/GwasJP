@@ -24,6 +24,16 @@ Prerequisit for the "accord" project
 -------------------
 The current development was designated for a historical clinical trial project ["the accord project"](https://github.com/2waybene/GwasJP/) -- need a real "accord" project link here
 
+There are a few files need to be prepared outside this project
+
+Model step 1
+/rundir/rhtn/ pheno_data_rhtn.txt 
+/rundir/rhtn/rhtn_combined/forced_covars.txt
+/rundir/rhtn/rhtn_combined/starting_covars.txt
+/rundir/rhtn/rhtn_combined/phenotypes.txt
+
+Model step 2
+
 In this package, a set of R codes are included and need to be downloaded and put in a separate bin folder. This "bin" folder needs to be set up properly
 
 To successfully run this project, a set of genotype data is needed. They are developed under Dr. Motsinger-Reif's supervision and can be requested. These genotype data need to be placed in a "data" folder.
