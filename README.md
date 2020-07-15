@@ -26,11 +26,12 @@ The current development was designated for a historical clinical trial project [
 
 There are a few files need to be prepared outside this project
 
-Model step 1
-/rundir/rhtn/ pheno_data_rhtn.txt 
-/rundir/rhtn/rhtn_combined/forced_covars.txt
-/rundir/rhtn/rhtn_combined/starting_covars.txt
-/rundir/rhtn/rhtn_combined/phenotypes.txt
+### Model step 1
+
+- **[/rundir/rhtn/ pheno_data_rhtn.txt **
+- **[/rundir/rhtn/rhtn_combined/forced_covars.txt**
+- **[/rundir/rhtn/rhtn_combined/starting_covars.txt**
+- **[/rundir/rhtn/rhtn_combined/phenotypes.txt**
 
 Model step 2
 
