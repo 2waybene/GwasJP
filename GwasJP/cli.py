@@ -125,8 +125,9 @@ def accordModelStep1(runningdir,  phenoname = None):
         manually set up directories and prepare all the prequisite files!\n")
         exit(1)
 
-    if (accord.checkDirectories (runningdir, phenoname) ==1 ):
+    if (accord.checkDirectories (runningdir, phenoname) == 1 ):
         print ("Subdirectory missing! Please check manuaal\n")
+
         exit(1)
   #  inputdir = rootdir + "/" + inputdir
     fullPath = os.path.abspath(runningdir)

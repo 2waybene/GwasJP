@@ -221,6 +221,7 @@ def checkDirectories (filepath, phenoname):
 
     for dir in dirs2check:
         if (os.path.isdir(dir) == False):
+            print ("this is dir: " + str(dir) + "\n")
             return (1)
     return(0)
 
