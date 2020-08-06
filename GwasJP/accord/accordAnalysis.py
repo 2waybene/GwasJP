@@ -24,7 +24,7 @@ def modelSetupDirectories (fullPath, prerequisitesdir , projectname):
     phenotype = str(fullPath) + "/phenotypes.txt"
 
     f = open(phenotype, 'r')
-    phenoname = f.readline()
+    phenoname = f.readline().strip()
     print("phenoname is " + str(phenoname) + "\n")
     #f.close()
 
