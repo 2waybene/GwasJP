@@ -8,10 +8,8 @@ from ..wrappers import gctaCalls,plinkCalls,smartpcaCalls
 
 
 def modelSetupDirectories (fullPath, prerequisitesdir , projectname):
-    print ("Creating directories for " + str(fullPath) + " for project " + str(projectname))
-    creatingDirs (fullPath, projectname)
-    print ("Copying presequiste files")
 
+    print ("Copying presequiste files")
     cmdTmp = "cp " + prerequisitesdir+"/forced_covars.txt " + str(fullPath)
     sp.call(cmdTmp,  shell=True)
     cmdTmp = "cp " + prerequisitesdir+"/starting_covars.txt " + str(fullPath)
@@ -20,6 +18,18 @@ def modelSetupDirectories (fullPath, prerequisitesdir , projectname):
     sp.call(cmdTmp,  shell=True)
     cmdTmp = "cp " + prerequisitesdir+"/pheno_data_rhtn.txt " + str(fullPath)
     sp.call(cmdTmp,  shell=True)
+
+    print ("Creating directories for " + str(fullPath) + " for project " + str(projectname))
+
+    phenotype = str(fullPath) + "/phenotypes.txt"
+
+    f = open(phenotype, 'r')
+    phenoname = f.readline()
+    print("phenoname is " + str(phenoname) + "\n")
+    #f.close()
+
+
+    creatingDirs (fullPath, phenoname)
 
     print ("Finished directory setup, ready for analysis\n")
 

@@ -31,6 +31,7 @@ def systemInfo(shout):
 @click.argument('prerequisitesdir', type=click.Path(exists=True))
 @click.argument('projectname', type=str)
 
+
 def accordWorkingDirSetup(rootdir, prerequisitesdir, projectname):
     '''
     Running accordJP pipeline, this is step 1:
