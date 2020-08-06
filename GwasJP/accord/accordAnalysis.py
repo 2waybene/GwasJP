@@ -7,7 +7,23 @@ from ..utils import statFittings, createSlurmJob, commonVariantAnalysis
 from ..wrappers import gctaCalls,plinkCalls,smartpcaCalls
 
 
-def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN", bFileInit = "/ddn/gs1/home/li11/local/accord/data/geno_data/unc.jj/post_qc.v3"):
+def modelSetupDirectories (fullPath, prerequisitesdir , projectname):
+    print ("Creating directories for " + str(fullPath) + " for project " + str(projectname))
+    creatingDirs (fullPath, projectname)
+    print ("Copying presequiste files")
+
+    cmdTmp = "cp " + prerequisitesdir+"/forced_covars.txt " + str(fullPath)
+    sp.call(cmdTmp,  shell=True)
+    cmdTmp = "cp " + prerequisitesdir+"/starting_covars.txt " + str(fullPath)
+    sp.call(cmdTmp,  shell=True)
+    cmdTmp = "cp " + prerequisitesdir+"/phenotypes.txt " + str(fullPath)
+    sp.call(cmdTmp,  shell=True)
+    cmdTmp = "cp " + prerequisitesdir+"/pheno_data_rhtn.txt " + str(fullPath)
+    sp.call(cmdTmp,  shell=True)
+
+    print ("Finished directory setup, ready for analysis\n")
+
+def modelStep1 (filepath, phenotype , phenoname, bFileInit = "/ddn/gs1/home/li11/local/accord/data/geno_data/unc.jj/post_qc.v3"):
 
     print ("****** Begin JOB:' " + str(filepath) + "'")
     print ("****** This is the phenotype data info:' " + str(phenotype) + "'")
@@ -16,17 +32,18 @@ def modelStep1 (filepath, phenotype = "pheno_data_rhtn.txt", phenoname = "RHTN",
     print ('*************************************')
     print ('This is the working path entered from the user:', str(filepath))
 
-    creatingDirs (filepath, phenoname)
+  #  creatingDirs (filepath, phenoname)
 
     ##============================================================
     ## command 0: replacing model_setup_step1.sh
     ##============================================================
 
     ## prepare a file pheontypes.txt
-    phenotypes = filepath + "/" + "phenotypes.txt"
-    f = open(phenotypes, 'w')
-    f.write(phenoname + "\n")
-    f.close()
+   # phenotypes = filepath + "/" + "phenotypes.txt"
+
+   # f = open(phenotype, 'w')
+    #f.write(phenoname + "\n")
+    #f.close()
 
 
 
@@ -173,6 +190,40 @@ def creatingDirs (filepath, phenoname):
             except OSError as error:
                 print(error)
 
+def checkDirectories (filepath, phenoname):
+    dirBatch1 = ["association_cv",
+	"association_cv/imputed_chunks",
+	"association_cv/imputed_chunks/imputed_chunks_forMeta",
+	"association_rv",
+	"cluster_plots",
+	"gcta",
+	"outputs",
+	"outputs/gc",
+	"pca",
+	"peak_data",
+	"pheno_data",
+	"relatedness",
+	"sbatch_logs",
+	"reg_plots"]
+
+    dirBatch2 = [
+            "reg_plots/" +phenoname + "_call",
+			"reg_plots/" +phenoname + "_call_bar",
+			"reg_plots/" +phenoname + "_dosage",
+			"reg_plots/" +phenoname + "_dosage_bar"
+    ]
+
+    dirs2check = []
+    for dir in dirBatch1:
+        dirs2check.append(filepath+"/"+dir)
+    for dir in dirBatch2:
+        dirs2check.append(filepath+"/"+dir)
+
+    for dir in dirs2check:
+        if (os.path.isdir(dir) == False):
+            return (1)
+    return(0)
+
 def modelStep2 (filepath, bFileInit = "/ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged"):
 
     print ("****** Begin JOB:' " + str(filepath) + "'")
@@ -282,7 +333,6 @@ def heritabilityTest (filepath, sampleList, phenotype,  p = 8, genoTypeData = "/
 def common_variant_analysis_genotyped (filepath, phenosFile, modelsFile, snplistFile = None):
 
 
-
     '''
     Current working path: RHTN_testRun/rhtn_combined/
     Launching logistic model for phenotype RHTN:
@@ -319,13 +369,7 @@ def common_variant_analysis_genotyped (filepath, phenosFile, modelsFile, snplist
             print (f)
             print(d)
             clusterJobs.append(f)
-           # cmd = "sbatch --partition=highmem --cpus-per-task=8 " + f
-           # commands.append(cmd)
 
-    #sp.call(cmd,  shell=True)
-    #split_cmd = shlex.split(commands)
-    ## Launch command
-    #sp.call(split_cmd)#,stdout=log_file,stderr=logerr_file)
 
     print ("Launching impute common variant analysis  step 3 of 3:")
     print ("Check the job status with command: squeue ")
@@ -336,20 +380,141 @@ def common_variant_analysis_genotyped (filepath, phenosFile, modelsFile, snplist
 
 
 
-def common_variant_analysis_imputed (filepath):
 
-    print ("****** Begin JOB:' " + str(filepath) + "'")
-    #for path in filepath :
-    print ('*************************************')
-    print ('This is the working path entered from the user:', str(filepath))
+def common_variant_analysis_imputed  (filepath, phenosFile, modelsFile, snplistFile = None):
 
-    ## Create system command
+    phenosFile = filepath + "/" + str(phenosFile)
+    modelsFile = filepath + "/" + str(modelsFile)
+    snplistFile = filepath + "/" + str(snplistFile)
 
-    # cmd = 'sbatch -p standard -o '+path+'/sbatch_logs/gcta.out ./bin/run_gcta.sh',path))
-    cmd = "place holder"
-    print (cmd)
-    sp.call(cmd,  shell=True)
-    print ("Launching genotype common variant analysis  step 2 of 3:" + cmd)
+    phenos = [line.strip() for line in open(phenosFile, 'r')]
+    models = [line.strip() for line in open(modelsFile, 'r')]
+
+    chroms = list(range(1, 23, 1)) + list(range(101, 113, 1))
+    print (chroms)
+
+    commands =[]
+    clusterJobs = []
+
+    '''
+
+
+    for i,pheno in enumerate(phenos):
+            ## modeltype is passed as a parameter to the bash script
+            for chrm in chroms:
+
+                print ("This is this the i:  " + str(i))
+                print ("This is the phenotype: " + pheno )
+                cmdTemp = [commonVariantAnalysis.modelEvalCVGenotyped (filepath, pheno, models, snplistFile)]
+            ##   using Default genotypeFle ="/home/accord/data/geno_data/post_qc.unc.uva.merged")
+                cmdTemp = ' '.join(('sbatch -x node[1-9] -o '+path+'/sbatch_logs/chr'+str(chrm)+'.cv.for.meta.'+pheno+
+                                '.out ./bin/model_eval_cv_imputed.for.meta.sh',
+                                path,str(chrm),models[i]))
+                jobName = "GenotypedCommonVariant" + str(i)
+                slurmSbatchFile="GenotypedCommonVariant" + str(i) + ".sh"
+
+            ## create a temporary sbatch file to submit
+                (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, cmdTemp, filepath )
+                print (f)
+                print(d)
+                clusterJobs.append(f)
+
+                cmd = ' '.join(('sbatch -x node[1-11] -o '+path+'/sbatch_logs/chr'+str(chrm)+'.cv.'+pheno+
+                                  '.out ./bin/model_eval_cv_imputed.sh',
+                                  path,str(chrm),models[i]))
+                 print 'Launching full imputed analysis',models[i],'model for phenotype',pheno+':\n',cmd
+                 ## Split cmd for shell
+                 split_cmd = shlex.split(cmd)
+
+
+                print ("This is this the i:  " + str(i))
+                print ("This is the phenotype: " + pheno )
+                cmdTemp = [commonVariantAnalysis.modelEvalCVGenotyped (filepath, pheno, models, snplistFile)]
+            ##   using Default genotypeFle ="/home/accord/data/geno_data/post_qc.unc.uva.merged")
+
+                jobName = "GenotypedCommonVariant" + str(i)
+                slurmSbatchFile="GenotypedCommonVariant" + str(i) + ".sh"
+
+            ## create a temporary sbatch file to submit
+                (f,d) = createSlurmJob.getASLURMJob (slurmSbatchFile , jobName, cmdTemp, filepath )
+                print (f)
+                print(d)
+                clusterJobs.append(f)
+
+		## Impute Analysis for Meta Analysis
+		 cmd = ' '.join(('sbatch -x node[1-9] -o '+path+'/sbatch_logs/chr'+str(chrm)+'.cv.for.meta.'+pheno+
+                                '.out ./bin/model_eval_cv_imputed.for.meta.sh',
+                                path,str(chrm),models[i]))
+                 print 'Launching imputed analysis for meta',models[i],'model for phenotype',pheno+':\n',cmd
+                 ## Split cmd for shell
+                 split_cmd = shlex.split(cmd)
+                 ## Launch command
+                 sp.call(split_cmd)#,stdout=log_file,stderr=logerr_file)
+    '''
+
+    print ("Launching impute common variant analysis  step 3 of 3:")
     print ("Check the job status with command: squeue ")
 
+    for job in clusterJobs:
+            cmd = "sbatch --partition=highmem --cpus-per-task=8 " + job
+            sp.call(cmd,  shell=True)
 
+
+
+    print ("Check the job status with command: squeue ")
+
+def cleanupImpuCommVarData (fullPath, phenotype, modelfile, selectedsnp):
+
+    print ("Error checking and cleaning up data")
+
+def metaAnalysis (filepath, phenosFile, modelsFile, snplistFile = None):
+
+    #FIXME need to test
+
+    phenosFile = filepath + "/" + str(phenosFile)
+    modelsFile = filepath + "/" + str(modelsFile)
+  #  snplistFile = filepath + "/" + str(snplistFile)
+    phenos = [line.strip() for line in open(phenosFile, 'r')]
+    models = [line.strip() for line in open(modelsFile, 'r')]
+
+
+
+    snplist =  os.path.isfile(filepath+'/snp_list.txt')
+
+
+
+        ## For each phenotype/modeltype, launch common variant analysis
+    for i,pheno in enumerate(phenos):
+            ## modeltype is passed as a parameter to the bash script
+        cmd = ' '.join(('sbatch -p standard -o '+filepath+'/sbatch_logs/runMetaAnalysis.'+pheno+
+		'.out ./bin/runPlinkMeta.sh',filepath,pheno,models[i],str(snplist)))
+
+
+        '''
+            #this is runPlinkMeta.sh
+            if [ "$model" == "linear" ]
+            then
+	            plink --meta-analysis $p/association_cv/allChrImputed_forMetaAnalysis.$pheno.assoc $p/association_cv/chr0.$pheno.assoc.$model + qt --silent --noweb --out $p/association_cv/plink_meta_$pheno
+                echo 'plink --meta-analysis '$p'/association_cv/allChrImputed_forMetaAnalysis.'$pheno'.assoc '$p'/association_cv/chr0.'$pheno'.assoc.'$model' + qt --silent --noweb --out '$p'/association_cv/plink_meta_'$pheno
+
+
+            else ##  logistic
+	            plink --meta-analysis $p/association_cv/allChrImputed_forMetaAnalysis.$pheno.assoc $p/association_cv/chr0.$pheno.assoc.$model --silent --noweb --out $p/association_cv/plink_meta_$pheno
+                echo 'plink --meta-analysis '$p'/association_cv/allChrImputed_forMetaAnalysis.'$pheno'.assoc '$p'/association_cv/chr0.'$pheno'.assoc.'$model' + logscale --silent --noweb --out '$p'/association_cv/plink_meta_'$pheno
+
+        '''
+         #   print 'Launching meta analysis for phenotype',pheno+':\n',cmd
+            ## Split cmd for shell
+        split_cmd = shlex.split(cmd)
+            ## Launch command
+        sp.call(split_cmd)#,stdout=log_file,stderr=logerr_file)
+
+    print ("needs to implement the meta analysis")
+
+def getPlotting (fullPath, phenotype, modelfile, selectedsnp):
+
+    print ("implement all the plottings ")
+
+def rareVariantAnalysis(fullPath, phenotype, modelfile, selectedsnp):
+
+    print ("Rare Variant Analysis")

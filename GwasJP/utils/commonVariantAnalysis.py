@@ -50,3 +50,16 @@ def modelEvalCVGenotyped (path, pheno, model, snpList, genotypeFle ="/ddn/gs1/ho
 				  " --hide-covar --silent --noweb --out  " + outFile
 
 	return(cmd)
+
+##	coverted from model.eval.genotyped.sh
+def modelEvalCVImputed (path, pheno, model, snpList, genotypeFle ="/ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged"):
+
+	print ("hello world")
+	phenoFile = path + "/pheno_data/pheno_" +  str(pheno) + ".txt"
+	covarFile = path + "/pheno_data/covar_" +  str(pheno) + ".txt"
+	outFile   = path + "/association_cv/chr0."  +  str(pheno)
+	extractOrNot =  os.path.isfile(snpList)
+	extractFile = path + str(snpList)
+	cmd = ""
+#	phenos = [line.strip() for line in open(path+'/phenotypes.txt', 'r')]
+#    models = [line.strip() for line in open(path+'/modeltypes.txt', 'r')]
