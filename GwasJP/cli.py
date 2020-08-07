@@ -217,15 +217,13 @@ def accordHeritability(runningdir, samplelist, thread, bfile, phenoname=None):
 @click.argument('runningdir', type=click.Path(exists=True))
 @click.option('--bfile', default= "/ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged", type=str,
               help='The bfile is for plink and can be replaced by the user')
+
 def accordGenoCommVar(runningdir, bfile):
 
     """
-
     Run accordJP pipeline, "genotyped common variant analysis"
 
     As of this moment, JYL -- FIXME
-
-
     """
 
     click.echo(click.format_filename(runningdir))
@@ -247,7 +245,7 @@ def accordGenoCommVar(runningdir, bfile):
     modelfile = runningdir+"/modeltypes.txt"
 
     if (os.path.exists(modelfile) and os.path.getsize(modelfile) > 0) and \
-            (os.path.exists(phenotype) and os.path.getsize(phenotype > 0)):
+            (os.path.exists(phenotype) and os.path.getsize(phenotype) > 0):
         print ("All prerequisites checked and passed!\n")
     else:
         print ("You don't seem to have the prequisite files, please consider running all required steps first!\n")
