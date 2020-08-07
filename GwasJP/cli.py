@@ -83,8 +83,8 @@ def accordWorkingDirSetup(rootdir, prerequisitesdir, projectname):
 
 @main.command()
 @click.argument('runningdir', type=click.Path(exists=True))
-@click.option('--bfile', default="/ddn/gs1/home/li11/local/accord/data/geno_data/unc.jj/post_qc.v3", type=str)
-
+@click.option('--bfile', default="/ddn/gs1/home/li11/local/accord/data/geno_data/unc.jj/post_qc.v3", type=str,
+              help='The bfile is for plink and can be replaced by the user')
 def accordModelStep1(runningdir, bfile):
 
     '''
@@ -136,27 +136,31 @@ def accordModelStep1(runningdir, bfile):
 
 
 @main.command()
-@click.argument('rootdir', type=click.Path(exists=True))
-@click.argument('inputdir',  type=str)
-def accordModelStep2(rootdir, inputdir=None):
+@click.argument('runningdir', type=click.Path(exists=True))
+@click.option('--bfile', default="/ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged", type=str,
+                            help='The bfile is for plink and can be replaced by the user')
+#bFileInit = "/ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged"):
+
+
+def accordModelStep2(runningdir, bfile):
 
     """
     Running accordJP pipeline, step 2:
     launch model setup step 2
 
-    User needs to provide the directory as the argument to kick off the analysis.
-    Print INPUTDIR if the directory exists.
-
+    Instruction: this is step 2 and depending on you have successfully finished step 1
+    Currently, it uses default plink file: /ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged
+    which can be replaced with proper parameter passed in
     As of this moment, JYL -- FIXME
     """
-    click.echo(click.format_filename(rootdir))
-    click.echo(click.format_filename(inputdir))
+    click.echo(click.format_filename(runningdir))
+    click.echo(click.format_filename(bfile))
 
-    inputdir = rootdir + "/" + inputdir
-    fullPath = os.path.abspath(inputdir)
+   # inputdir = rootdir + "/" + inputdir
+    fullPath = os.path.abspath(runningdir)
     print ("This is the full path:  " + fullPath)
 
-    accord.modelStep2(fullPath)
+    accord.modelStep2(fullPath, bfile)
 
 @main.command()
 @click.argument('rootdir', type=click.Path(exists=True))
@@ -166,6 +170,9 @@ def accordModelStep2(rootdir, inputdir=None):
               help='The sample_list.txt is needed for the analysis.')
 @click.option('--thread', default= 8, type=int,
               help='The defaulty thread is 8')
+@click.option('--bfile', default= "/ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged", type=str,
+              help='The bfile is for plink and can be replaced by the user')
+
 def accordHeritability(rootdir, samplelist, phenoname, thread, inputdir=None):
 
     """

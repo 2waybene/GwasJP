@@ -236,8 +236,8 @@ def checkDirectories (filepath, phenoname):
             return (1)
     return(0)
 
-def modelStep2 (filepath, bFileInit = "/ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged"):
 
+def modelStep2 (filepath, bFileInit):
     print ("****** Begin JOB:' " + str(filepath) + "'")
 
     #for path in filepath :
