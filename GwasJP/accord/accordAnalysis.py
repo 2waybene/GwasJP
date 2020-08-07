@@ -343,9 +343,9 @@ def heritabilityTest (filepath, sampleList, phenotype,  p , genoTypeData):
     print ("Launching launchHeritability step 1 of 3:" + cmd)
     print ("Check the job status with command: squeue ")
 
-def common_variant_analysis_genotyped (filepath, phenosFile, modelsFile, snplistFile = None):
+def common_variant_analysis_genotyped (filepath, phenosFile, modelsFile, snplistFile ):
 
-
+ #   accord.common_variant_analysis_genotyped (fullPath, phenoname, modelfile, snplistFile)
     '''
     Current working path: RHTN_testRun/rhtn_combined/
     Launching logistic model for phenotype RHTN:
@@ -356,11 +356,14 @@ def common_variant_analysis_genotyped (filepath, phenosFile, modelsFile, snplist
     print ("****** Begin JOB: Genotyped Common Variant Analysis  ******")
     print ("Here is the file path:  " + str(filepath) )
 
-    phenosFile = filepath + "/" + str(phenosFile)
-    modelsFile = filepath + "/" + str(modelsFile)
-    snplistFile = filepath + "/" + str(snplistFile)
+  #  phenosFile = filepath + "/" + str(phenosFile)
+
+   # snplistFile = filepath + "/" + str(snplistFile)
+
+
     phenos = [line.strip() for line in open(phenosFile, 'r')]
     models = [line.strip() for line in open(modelsFile, 'r')]
+
    # snplist =  os.path.isfile(snplistFile)
 
     commands =[]
