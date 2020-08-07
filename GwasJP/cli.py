@@ -165,7 +165,7 @@ def accordModelStep2(runningdir, bfile):
 @main.command()
 @click.argument('runningdir', type=click.Path(exists=True))
 #@click.argument('inputdir',  type=str)
-@click.argument('phenoname', type=str)
+#@click.argument('phenoname', type=str)
 @click.option('--samplelist', default= "sample_list.txt", type=str,
               help='The sample_list.txt is needed for the analysis.')
 @click.option('--thread', default= 8, type=int,
@@ -173,7 +173,7 @@ def accordModelStep2(runningdir, bfile):
 @click.option('--bfile', default= "/ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged", type=str,
               help='The bfile is for plink and can be replaced by the user')
 
-def accordHeritability(runningdir, samplelist, phenoname, thread, bfile):
+def accordHeritability(runningdir, samplelist, thread, bfile, phenoname=None):
 
     """
     Run accordJP pipeline,
@@ -197,6 +197,7 @@ def accordHeritability(runningdir, samplelist, phenoname, thread, bfile):
     fullPath = os.path.abspath(runningdir)
     print ("This is the full path:  " + fullPath)
 
+ #   phenoname = ""
     phenotype = str(runningdir) + "/phenotypes.txt"
     try:
         f = open(phenotype, 'r')
