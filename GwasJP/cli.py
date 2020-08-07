@@ -85,7 +85,7 @@ def accordWorkingDirSetup(rootdir, prerequisitesdir, projectname):
 @click.argument('runningdir', type=click.Path(exists=True))
 @click.option('--bfile', default="/ddn/gs1/home/li11/local/accord/data/geno_data/unc.jj/post_qc.v3", type=str)
 
-def accordModelStep1(runningdir,  bfile):
+def accordModelStep1(runningdir, bfile):
 
     '''
     Running accordJP pipeline, step 1:
@@ -119,8 +119,7 @@ def accordModelStep1(runningdir,  bfile):
         manually set up directories and prepare all the prequisite files!\n")
         exit(1)
 
-        phenotype = str(fullPath) + "/phenotypes.txt"
-
+    phenotype = str(runningdir) + "/phenotypes.txt"
     f = open(phenotype, 'r')
     phenoname = f.readline().strip()
     print("phenoname is " + str(phenoname) + "\n")
