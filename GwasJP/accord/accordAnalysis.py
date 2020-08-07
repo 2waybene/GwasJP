@@ -33,7 +33,7 @@ def modelSetupDirectories (fullPath, prerequisitesdir , projectname):
 
     print ("Finished directory setup, ready for analysis\n")
 
-def modelStep1 (filepath, phenotype , phenoname, bFileInit = "/ddn/gs1/home/li11/local/accord/data/geno_data/unc.jj/post_qc.v3"):
+def modelStep1 (filepath, phenotype , bFileInit ):
 
     print ("****** Begin JOB:' " + str(filepath) + "'")
     print ("****** This is the phenotype data info:' " + str(phenotype) + "'")
@@ -62,6 +62,7 @@ def modelStep1 (filepath, phenotype , phenoname, bFileInit = "/ddn/gs1/home/li11
     ## command 1: used to be pheno_data_step1.r
     ##  Now located: /ddn/gs1/home/li11/local/accord/bin/pheno_data_step1.r
     ##============================================================
+
     outputFile = filepath + "/pheno_data/pheno_data_step1.txt"
     '''
     cmd1 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/pheno_data_step1.r --args " + filepath + " " + phenotype + " " +  outputFile

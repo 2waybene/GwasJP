@@ -83,11 +83,9 @@ def accordWorkingDirSetup(rootdir, prerequisitesdir, projectname):
 
 @main.command()
 @click.argument('runningdir', type=click.Path(exists=True))
-#@click.argument('inputdir',  type=str)
-#@click.argument('phenodata', type=str)
-@click.argument('phenoname', type=str)
+@click.option('--bfile', default="/ddn/gs1/home/li11/local/accord/data/geno_data/unc.jj/post_qc.v3", type=str)
 
-def accordModelStep1(runningdir,  phenoname = None):
+def accordModelStep1(runningdir,  bfile):
 
     '''
     Running accordJP pipeline, step 1:
@@ -96,21 +94,16 @@ def accordModelStep1(runningdir,  phenoname = None):
 
     As of this moment, JYL -- FIXME
 
-    Instruction from Dr. John House:
-
-    Make sure your phenotype data file is called '/home/accord/data/analysis/pheno_data.txt' before launching step 1
-    Update: File should be named "pheno_data_*****.txt" Step 1 will prompt user for pheno file name
-    Make sure you are in ~/accord/data/analysis when you start running this code
-
-    Print INPUTDIR if the directory exists.
-    Print PHENODATA from the input or use defaulty: pheno_data.txt
+    Instruction: if you have run accordWorkingDirSetup step or manually set up all the directory
+    you shall be good to go.
+    Currently, it uses default plink file: /ddn/gs1/home/li11/local/accord/data/geno_data/unc.jj/post_qc.v3
+    which can be replaced with proper parameter passed in
 
     '''
 
     click.echo(click.format_filename(runningdir))
-  #  click.echo(click.format_filename(inputdir))
-    click.echo(phenoname)
-
+    click.echo(bfile)
+    #click.echo(phenoname)
     file1 = runningdir+"/forced_covars.txt"
     file2 = runningdir+"/starting_covars.txt"
     phenotypes = runningdir+"/phenotypes.txt"
@@ -126,18 +119,21 @@ def accordModelStep1(runningdir,  phenoname = None):
         manually set up directories and prepare all the prequisite files!\n")
         exit(1)
 
+        phenotype = str(fullPath) + "/phenotypes.txt"
+
+    f = open(phenotype, 'r')
+    phenoname = f.readline().strip()
+    print("phenoname is " + str(phenoname) + "\n")
+
     if (accord.checkDirectories (runningdir, phenoname) == 1 ):
         print ("Subdirectory missing! Please check manuaal\n")
-
         exit(1)
-  #  inputdir = rootdir + "/" + inputdir
+
     fullPath = os.path.abspath(runningdir)
     print ("This is the full path:  " + fullPath)
 
-   # phenodata = rootdir + "/" + phenodata
-
     ## Kick off main analysis
-    accord.modelStep1(fullPath, phenodata, phenoname, )
+    accord.modelStep1(fullPath, phenodata, bfile)
 
 
 @main.command()
