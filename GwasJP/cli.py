@@ -163,8 +163,8 @@ def accordModelStep2(runningdir, bfile):
     accord.modelStep2(fullPath, bfile)
 
 @main.command()
-@click.argument('rootdir', type=click.Path(exists=True))
-@click.argument('inputdir',  type=str)
+@click.argument('runningdir', type=click.Path(exists=True))
+#@click.argument('inputdir',  type=str)
 @click.argument('phenoname', type=str)
 @click.option('--samplelist', default= "sample_list.txt", type=str,
               help='The sample_list.txt is needed for the analysis.')
@@ -173,28 +173,41 @@ def accordModelStep2(runningdir, bfile):
 @click.option('--bfile', default= "/ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged", type=str,
               help='The bfile is for plink and can be replaced by the user')
 
-def accordHeritability(rootdir, samplelist, phenoname, thread, inputdir=None):
+def accordHeritability(runningdir, samplelist, phenoname, thread, bfile):
 
     """
     Run accordJP pipeline,
     starting heritability analysis.
 
+    Instruction: this is step 2 and depending on you have successfully finished step 1 & 2
+
+    Currently, it uses default plink file: /ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged
+    which can be replaced with proper parameter passed in
+
+    The default thread is 8 for parallel, which can also be changed by the user
+    The samplelist file is created in set up step 2
+
     As of this moment, JYL -- FIXME
-
-    Print INPUTDIR if the directory exists.
-
     """
-    click.echo(click.format_filename(rootdir))
-    click.echo(click.format_filename(inputdir))
-    click.echo(click.format_filename(phenoname))
 
-    inputdir = rootdir + "/" + inputdir
-    fullPath = os.path.abspath(inputdir)
+    click.echo(click.format_filename(runningdir))
+    click.echo(click.format_filename(bfile))
+    click.echo(click.format_filename(samplelist))
+
+    fullPath = os.path.abspath(runningdir)
     print ("This is the full path:  " + fullPath)
+
+    phenotype = str(runningdir) + "/phenotypes.txt"
+    try:
+        f = open(phenotype, 'r')
+        phenoname = f.readline().strip()
+        print("phenoname is " + str(phenoname) + "\n")
+    except OSError as error:
+        print(error)
 
     sampleList = fullPath + "/pheno_data/" + samplelist
     if (os.path.isfile(sampleList)):
-        accord.heritabilityTest(fullPath, sampleList, phenoname, thread)
+        accord.heritabilityTest(fullPath, sampleList, phenoname, thread, bfile)
     else:
         print ("Sample list file does no exist!\n")
         exit(1)
