@@ -139,9 +139,6 @@ def accordModelStep1(runningdir, bfile):
 @click.argument('runningdir', type=click.Path(exists=True))
 @click.option('--bfile', default="/ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged", type=str,
                             help='The bfile is for plink and can be replaced by the user')
-#bFileInit = "/ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged"):
-
-
 def accordModelStep2(runningdir, bfile):
 
     """
@@ -156,10 +153,8 @@ def accordModelStep2(runningdir, bfile):
     click.echo(click.format_filename(runningdir))
     click.echo(click.format_filename(bfile))
 
-   # inputdir = rootdir + "/" + inputdir
     fullPath = os.path.abspath(runningdir)
     print ("This is the full path:  " + fullPath)
-
     accord.modelStep2(fullPath, bfile)
 
 @main.command()
@@ -170,7 +165,6 @@ def accordModelStep2(runningdir, bfile):
               help='The defaulty thread is 8')
 @click.option('--bfile', default= "/ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged", type=str,
               help='The bfile is for plink and can be replaced by the user')
-
 def accordHeritability(runningdir, samplelist, thread, bfile, phenoname=None):
 
     """
@@ -195,7 +189,6 @@ def accordHeritability(runningdir, samplelist, thread, bfile, phenoname=None):
     fullPath = os.path.abspath(runningdir)
     print ("This is the full path:  " + fullPath)
 
- #   phenoname = ""
     phenotype = str(runningdir) + "/phenotypes.txt"
     try:
         f = open(phenotype, 'r')
@@ -217,11 +210,12 @@ def accordHeritability(runningdir, samplelist, thread, bfile, phenoname=None):
 @click.argument('runningdir', type=click.Path(exists=True))
 @click.option('--bfile', default= "/ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged", type=str,
               help='The bfile is for plink and can be replaced by the user')
-
 def accordGenoCommVar(runningdir, bfile):
 
     """
     Run accordJP pipeline, "genotyped common variant analysis"
+    Currently, it uses default plink file: /ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged
+    which can be replaced with proper parameter passed in
 
     As of this moment, JYL -- FIXME
     """
@@ -232,16 +226,6 @@ def accordGenoCommVar(runningdir, bfile):
     print ("This is the full path:  " + fullPath)
 
     phenotype = str(runningdir) + "/phenotypes.txt"
-
-    '''
-    try:
-        f = open(phenotype, 'r')
-        phenoname = f.readline().strip()
-        print("phenoname is " + str(phenoname) + "\n")
-    except OSError as error:
-        print(error)
-    '''
-
     modelfile = runningdir+"/modeltypes.txt"
 
     if (os.path.exists(modelfile) and os.path.getsize(modelfile) > 0) and \
