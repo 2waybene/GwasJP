@@ -215,7 +215,9 @@ def accordHeritability(runningdir, samplelist, thread, bfile, phenoname=None):
 
 @main.command()
 @click.argument('runningdir', type=click.Path(exists=True))
-def accordGenoCommVar(runningdir, phenoname=None):
+@click.option('--bfile', default= "/ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged", type=str,
+              help='The bfile is for plink and can be replaced by the user')
+def accordGenoCommVar(runningdir, bfile):
 
     """
 
@@ -232,22 +234,27 @@ def accordGenoCommVar(runningdir, phenoname=None):
     print ("This is the full path:  " + fullPath)
 
     phenotype = str(runningdir) + "/phenotypes.txt"
+
+    '''
     try:
         f = open(phenotype, 'r')
         phenoname = f.readline().strip()
         print("phenoname is " + str(phenoname) + "\n")
     except OSError as error:
         print(error)
+    '''
 
     modelfile = runningdir+"/modeltypes.txt"
-    if (os.path.exists(modelfile) and os.path.getsize(modelfile) > 0):
+
+    if (os.path.exists(modelfile) and os.path.getsize(modelfile) > 0) and \
+            (os.path.exists(phenotype) and os.path.getsize(phenotype > 0)):
         print ("All prerequisites checked and passed!\n")
     else:
         print ("You don't seem to have the prequisite files, please consider running all required steps first!\n")
         exit(1)
 
     selectedsnp = runningdir+"/snp_list.txt"
-    accord.common_variant_analysis_genotyped (fullPath, phenoname, modelfile, selectedsnp)
+    accord.common_variant_analysis_genotyped (fullPath, phenotype, modelfile, selectedsnp, bfile)
 
 
 @main.command()

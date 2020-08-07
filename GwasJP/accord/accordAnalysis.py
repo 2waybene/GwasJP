@@ -343,7 +343,7 @@ def heritabilityTest (filepath, sampleList, phenotype,  p , genoTypeData):
     print ("Launching launchHeritability step 1 of 3:" + cmd)
     print ("Check the job status with command: squeue ")
 
-def common_variant_analysis_genotyped (filepath, phenosFile, modelsFile, snplistFile ):
+def common_variant_analysis_genotyped (filepath, phenosFile, modelsFile, snplistFile , bFile):
 
  #   accord.common_variant_analysis_genotyped (fullPath, phenoname, modelfile, snplistFile)
     '''
@@ -374,7 +374,7 @@ def common_variant_analysis_genotyped (filepath, phenosFile, modelsFile, snplist
 
             print ("This is this the i:  " + str(i))
             print ("This is the phenotype: " + pheno )
-            cmdTemp = [commonVariantAnalysis.modelEvalCVGenotyped (filepath, pheno, models, snplistFile)]
+            cmdTemp = [commonVariantAnalysis.modelEvalCVGenotyped (filepath, pheno, models, snplistFile, bFile)]
             ##   using Default genotypeFle ="/home/accord/data/geno_data/post_qc.unc.uva.merged")
 
             jobName = "GenotypedCommonVariant" + str(i)
