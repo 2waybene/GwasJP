@@ -164,8 +164,6 @@ def accordModelStep2(runningdir, bfile):
 
 @main.command()
 @click.argument('runningdir', type=click.Path(exists=True))
-#@click.argument('inputdir',  type=str)
-#@click.argument('phenoname', type=str)
 @click.option('--samplelist', default= "sample_list.txt", type=str,
               help='The sample_list.txt is needed for the analysis.')
 @click.option('--thread', default= 8, type=int,
@@ -214,14 +212,10 @@ def accordHeritability(runningdir, samplelist, thread, bfile, phenoname=None):
         exit(1)
 
 
-@main.command()
-@click.argument('rootdir', type=click.Path(exists=True))
-@click.argument('inputdir',  type=str)
-@click.argument('phenotype', type=str)
-@click.argument('modelfile', type=str)
-@click.argument('selectedsnp', type=str)
 
-def accordGenoCommVar(rootdir, phenotype, modelfile, inputdir, selectedsnp=None):
+@main.command()
+@click.argument('runningdir', type=click.Path(exists=True))
+def accordGenoCommVar(runningdir, phenoname=None):
 
     """
 
@@ -229,21 +223,31 @@ def accordGenoCommVar(rootdir, phenotype, modelfile, inputdir, selectedsnp=None)
 
     As of this moment, JYL -- FIXME
 
-    Print INPUTDIR if the directory exists.
 
     """
 
-    click.echo(click.format_filename(rootdir))
-    click.echo(click.format_filename(inputdir))
-    click.echo(click.format_filename(phenotype))
-    click.echo(click.format_filename(modelfile))
+    click.echo(click.format_filename(runningdir))
 
-    inputdir = rootdir + "/" + inputdir
-    fullPath = os.path.abspath(inputdir)
+    fullPath = os.path.abspath(runningdir)
     print ("This is the full path:  " + fullPath)
-    click.echo(click.format_filename(inputdir))
 
-    accord.common_variant_analysis_genotyped (fullPath, phenotype, modelfile, selectedsnp)
+    phenotype = str(runningdir) + "/phenotypes.txt"
+    try:
+        f = open(phenotype, 'r')
+        phenoname = f.readline().strip()
+        print("phenoname is " + str(phenoname) + "\n")
+    except OSError as error:
+        print(error)
+
+    modelfile = runningdir+"/modeltypes.txt"
+    if (os.path.exists(modelfile) and os.path.getsize(modelfile) > 0):
+        print ("All prerequisites checked and passed!\n")
+    else:
+        print ("You don't seem to have the prequisite files, please consider running all required steps first!\n")
+        exit(1)
+
+    selectedsnp = runningdir+"/snp_list.txt"
+    accord.common_variant_analysis_genotyped (fullPath, phenoname, modelfile, selectedsnp)
 
 
 @main.command()
