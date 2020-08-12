@@ -5,15 +5,23 @@ date
 ## Set max number threads for GLM (BLAS algorithm). When Ubuntu upgraded OpenBLAS,
 ## This script started using as many threads as there were cores on any node. That caused a massive slowdown
 ## 16 threads * 16 jobs = 196 threads and system was overloaded. This forces only 4 threads. Could even bump down to 1
+##===============================================
+##  Modified by Jianying Li
+##  July, 15th, 2020
+##===============================================
+
 export OPENBLAS_NUM_THREADS=4
+
 
 p=$1
 chr=$2
+imputDataDir=$3  ##JYL
 tmprand=$RANDOM
 me=$USER
 if [ $chr -ge 100 ]; then
 	chr=$((chr-100))
-  for f in $(ls ../imputation/outputs/chr${chr}.*gz | sort -nt. -k5);do
+  #for f in $(ls ../imputation/outputs/chr${chr}.*gz | sort -nt. -k5);do
+  for f in $(ls $imputDataDir/chr${chr}.*gz | sort -nt. -k5);do
     chunk=${f%.gz}
     chunk=${chunk##*.}
     if [[ ( "$chr" -eq 1 && "$chunk" -ge 25 ) || \
@@ -34,8 +42,12 @@ if [ $chr -ge 100 ]; then
       mkdir "/tmp/accord.party.$me.$chr.$chunk.$tmprand"
       f_gz="chr$chr.imputed.$chunk"
       echo "gunzip the file on node: /tmp/accord.party.$me.$chr.$chunk.$tmprand/$f_gz"
-      zcat "../imputation/outputs/$f_gz.gz" > "/tmp/accord.party.$me.$chr.$chunk.$tmprand/$f_gz"
+      #zcat "../imputation/outputs/$f_gz.gz" > "/tmp/accord.party.$me.$chr.$chunk.$tmprand/$f_gz"
+
+      zcat "$imputDataDir/$f_gz.gz" > "/tmp/accord.party.$me.$chr.$chunk.$tmprand/$f_gz" ##JYL
+
       time R --slave --vanilla --file=bin/compute_cv.r --args $p $chr $chunk "/tmp/accord.party.$me.$chr.$chunk.$tmprand/$f_gz"
+
       echo "Remove tmp directory on node: /tmp/accord.party.$me.$chr.$chunk.$tmprand"
       rm -r "/tmp/accord.party.$me.$chr.$chunk.$tmprand"
     fi

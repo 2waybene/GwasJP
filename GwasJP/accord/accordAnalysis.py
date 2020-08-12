@@ -397,11 +397,15 @@ def common_variant_analysis_genotyped (filepath, phenosFile, modelsFile, snplist
 
 
 
-def common_variant_analysis_imputed  (filepath, phenosFile, modelsFile, snplistFile = None):
+def common_variant_analysis_imputed  (filepath, phenosFile, modelsFile, snplistFile, bFile):
 
-    phenosFile = filepath + "/" + str(phenosFile)
-    modelsFile = filepath + "/" + str(modelsFile)
-    snplistFile = filepath + "/" + str(snplistFile)
+   # phenosFile = filepath + "/" + str(phenosFile)
+    #modelsFile = filepath + "/" + str(modelsFile)
+
+   # snplistFile = filepath + "/" + str(snplistFile)
+
+    #phenos = [line.strip() for line in open(phenosFile, 'r')]
+    #models = [line.strip() for line in open(modelsFile, 'r')]
 
     phenos = [line.strip() for line in open(phenosFile, 'r')]
     models = [line.strip() for line in open(modelsFile, 'r')]
@@ -492,7 +496,6 @@ def metaAnalysis (filepath, phenosFile, modelsFile, snplistFile = None):
   #  snplistFile = filepath + "/" + str(snplistFile)
     phenos = [line.strip() for line in open(phenosFile, 'r')]
     models = [line.strip() for line in open(modelsFile, 'r')]
-
 
 
     snplist =  os.path.isfile(filepath+'/snp_list.txt')

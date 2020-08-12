@@ -238,18 +238,18 @@ def accordGenoCommVar(runningdir, bfile):
     selectedsnp = runningdir+"/snp_list.txt"
     accord.common_variant_analysis_genotyped (fullPath, phenotype, modelfile, selectedsnp, bfile)
 
-
 @main.command()
-@click.argument('rootdir', type=click.Path(exists=True))
-@click.argument('inputdir',  type=str)
-@click.argument('phenotype', type=str)
-@click.argument('modelfile', type=str)
-@click.argument('selectedsnp', type=str)
+@click.argument('runningdir', type=click.Path(exists=True))
+@click.option('--bfile', default= "/ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged", type=str,
+              help='The bfile is for plink and can be replaced by the user')
+#@click.argument('inputdir',  type=str)
+#@click.argument('phenotype', type=str)
+#@click.argument('modelfile', type=str)
+#@click.argument('selectedsnp', type=str)
 
-def accordImpuCommVar(rootdir, phenotype, modelfile, inputdir, selectedsnp=None):
+def accordImpuCommVar(runningdir, bfile):
 
     """
-
     Run accordJP pipeline, "genotyped common variant analysis"
 
     As of this moment, JYL -- FIXME
@@ -258,17 +258,36 @@ def accordImpuCommVar(rootdir, phenotype, modelfile, inputdir, selectedsnp=None)
 
     """
 
-    click.echo(click.format_filename(rootdir))
-    click.echo(click.format_filename(inputdir))
-    click.echo(click.format_filename(phenotype))
-    click.echo(click.format_filename(modelfile))
+    click.echo(click.format_filename(runningdir))
+ #   click.echo(click.format_filename(inputdir))
+ #   click.echo(click.format_filename(phenotype))
+ #   click.echo(click.format_filename(modelfile))
 
-    inputdir = rootdir + "/" + inputdir
-    fullPath = os.path.abspath(inputdir)
+  #  inputdir = rootdir + "/" + inputdir
+  #  fullPath = os.path.abspath(inputdir)
+   # print ("This is the full path:  " + fullPath)
+    #click.echo(click.format_filename(inputdir))
+
+
+    click.echo(click.format_filename(runningdir))
+
+    fullPath = os.path.abspath(runningdir)
     print ("This is the full path:  " + fullPath)
-    click.echo(click.format_filename(inputdir))
 
-    accord.common_variant_analysis_imputed (fullPath, phenotype, modelfile, selectedsnp)
+    phenotype = str(runningdir) + "/phenotypes.txt"
+    modelfile = runningdir+"/modeltypes.txt"
+
+    if (os.path.exists(modelfile) and os.path.getsize(modelfile) > 0) and \
+            (os.path.exists(phenotype) and os.path.getsize(phenotype) > 0):
+        print ("All prerequisites checked and passed!\n")
+    else:
+        print ("You don't seem to have the prequisite files, please consider running all required steps first!\n")
+        exit(1)
+
+    selectedsnp = runningdir+"/snp_list.txt"
+
+
+    accord.common_variant_analysis_imputed (fullPath, phenotype, modelfile, selectedsnp, bfile)
 
 
 @main.command()
