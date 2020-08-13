@@ -83,9 +83,11 @@ def accordWorkingDirSetup(rootdir, prerequisitesdir, projectname):
 
 @main.command()
 @click.argument('runningdir', type=click.Path(exists=True))
+@click.option('--rdir', default="/ddn/gs1/home/li11/local/accord/bin/", type=str,
+              help='The directory that contains execute R codes etc.')
 @click.option('--bfile', default="/ddn/gs1/home/li11/local/accord/data/geno_data/unc.jj/post_qc.v3", type=str,
               help='The bfile is for plink and can be replaced by the user')
-def accordModelStep1(runningdir, bfile):
+def accordModelStep1(runningdir, rdir, bfile):
 
     '''
     Running accordJP pipeline, step 1:
@@ -103,6 +105,12 @@ def accordModelStep1(runningdir, bfile):
 
     click.echo(click.format_filename(runningdir))
     click.echo(bfile)
+    click.echo(rdir)
+
+    Rdir = os.path.isdir(rdir)
+    if (Rdir != True):
+        print ("You don't seem to have the correct directory containing the r codes.")
+        exit(1)
     #click.echo(phenoname)
     file1 = runningdir+"/forced_covars.txt"
     file2 = runningdir+"/starting_covars.txt"
@@ -132,14 +140,16 @@ def accordModelStep1(runningdir, bfile):
     print ("This is the full path:  " + fullPath)
 
     ## Kick off main analysis
-    accord.modelStep1(fullPath, phenodata, bfile)
+    accord.modelStep1(fullPath, phenodata, rdir, bfile)
 
 
 @main.command()
 @click.argument('runningdir', type=click.Path(exists=True))
+@click.option('--rdir', default="/ddn/gs1/home/li11/local/accord/bin/", type=str,
+              help='The directory that contains execute R codes etc.')
 @click.option('--bfile', default="/ddn/gs1/home/li11/local/accord/data/geno_data/post_qc.unc.uva.merged", type=str,
                             help='The bfile is for plink and can be replaced by the user')
-def accordModelStep2(runningdir, bfile):
+def accordModelStep2(runningdir, rdir, bfile):
 
     """
     Running accordJP pipeline, step 2:
@@ -152,10 +162,16 @@ def accordModelStep2(runningdir, bfile):
     """
     click.echo(click.format_filename(runningdir))
     click.echo(click.format_filename(bfile))
+    click.echo(rdir)
+
+    Rdir = os.path.isdir(rdir)
+    if (Rdir != True):
+        print ("You don't seem to have the correct directory containing the r codes.")
+        exit(1)
 
     fullPath = os.path.abspath(runningdir)
     print ("This is the full path:  " + fullPath)
-    accord.modelStep2(fullPath, bfile)
+    accord.modelStep2(fullPath, rdir,bfile)
 
 @main.command()
 @click.argument('runningdir', type=click.Path(exists=True))

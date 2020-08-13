@@ -33,7 +33,7 @@ def modelSetupDirectories (fullPath, prerequisitesdir , projectname):
 
     print ("Finished directory setup, ready for analysis\n")
 
-def modelStep1 (filepath, phenotype , bFileInit ):
+def modelStep1 (filepath, phenotype , Rdir , bFileInit ):
 
     print ("****** Begin JOB:' " + str(filepath) + "'")
     print ("****** This is the phenotype data info:' " + str(phenotype) + "'")
@@ -68,7 +68,7 @@ def modelStep1 (filepath, phenotype , bFileInit ):
     cmd1 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/pheno_data_step1.r --args " + filepath + " " + phenotype + " " +  outputFile
     sp.call(cmd1,  shell=True)
     '''
-    cmd0 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/pheno_data_step1.r --args " + filepath + " " + phenotype + " " +  outputFile
+    cmd0 = "R --slave --vanilla --file=" + str(Rdir) + "/pheno_data_step1.r --args " + filepath + " " + phenotype + " " +  outputFile
 
     ##============================================================
     ## command 2-- : used to be time ./bin/relatedness.sh $p
@@ -99,8 +99,8 @@ def modelStep1 (filepath, phenotype , bFileInit ):
     ##=============================================================
     #for Compute and plot relatedness
     ##=============================================================
-    cmd4 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/relatedness_plot.r  --args "+ filepath
-    cmd5 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/relatedness_discard.r  --args " + filepath
+    cmd4 = "R --slave --vanilla --file=" + str(Rdir) + "/relatedness_plot.r  --args "+ filepath
+    cmd5 = "R --slave --vanilla --file=" + str(Rdir) + "/relatedness_discard.r  --args " + filepath
 
 
     # Filter SNPs in LD
@@ -117,7 +117,7 @@ def modelStep1 (filepath, phenotype , bFileInit ):
     outPruned  = filepath + "/pca/data_pruned"
     cmd7 = "plink --bfile " + bFile + " --remove " + rmFile+  " --extract " + extractFile+ " --recode12 --transpose --silent --noweb --out " + outPruned
 
-    cmd8 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/pca_ind.r  --args " + filepath + " " +  phenotype
+    cmd8 = "R --slave --vanilla --file=" + str(Rdir) + "/pca_ind.r  --args " + filepath + " " +  phenotype
 
     ##======================================================================
     ## two parts of awk script to parse files after pca
@@ -145,7 +145,7 @@ def modelStep1 (filepath, phenotype , bFileInit ):
     cmd11 = "smartpca.perl -i " + genoFile + " -a " + snpFile + " -b " + filepath + "/pca/ind.txt" + " -k 10 -o " + oPCA \
             + " -p " + pPCA + " -e " + ePCA + " -l " + lPCA + " -m 0  -t 5   -s 6.0"
     # Plot PCs
-    cmd12 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/pca_plot.r --args " + filepath
+    cmd12 = "R --slave --vanilla --file=" + str(Rdir) + "/pca_plot.r --args " + filepath
 
 
     ##======================================================================
@@ -237,7 +237,7 @@ def checkDirectories (filepath, phenoname):
     return(0)
 
 
-def modelStep2 (filepath, bFileInit):
+def modelStep2 (filepath, Rdir, bFileInit):
     print ("****** Begin JOB:' " + str(filepath) + "'")
 
     #for path in filepath :
@@ -249,20 +249,20 @@ def modelStep2 (filepath, bFileInit):
     #--file=/ddn/gs1/home/li11/local/accord/bin/pca_plot.r -
     #echo "Remove designated covars and related individuals. Add first 10 PCs..."
     # Remove selected covars and related individuals. Add first 10 PCs.
-    cmd1 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/pheno_data_step2.r --args " + filepath
+    cmd1 = "R --slave --vanilla --file=" + str(Rdir) + "/pheno_data_step2.r --args " + filepath
 
     # Perform log transformation on pheno_data_step2.txt. Creates histograms and replaces vals in d4m cols
     #R --slave --vanilla --file=bin/rotroff_scripts/log_transform_and_hist_v1.R --args $p
 
     #echo "Create modeltypes.txt. If only unique(phenotype values)=2, then logistic model is chosen..."
     ## Create a file called modeltypes.txt which explains the model type for each line of phenotypes.txt (lm or glm models)
-    cmd2 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/create.model.types.r --args " + filepath
+    cmd2 = "R --slave --vanilla --file=" + str(Rdir) + "/create.model.types.r --args " + filepath
 
     #echo "Perform backwards selection on covars..."
     # Backwards select non-forced covars. Create pheno files for R script, PLINK, and GCTA
 
-    rSourceFile = "/ddn/gs1/home/li11/local/accord/bin/load_pheno_data.r"
-    cmd3 = "R --slave --vanilla --file=/ddn/gs1/home/li11/local/accord/bin/covar_backwards_selection_BIC.r --args " + \
+    rSourceFile = str(Rdir) + "/load_pheno_data.r"
+    cmd3 = "R --slave --vanilla --file=" + str(Rdir) + "/covar_backwards_selection_BIC.r --args " + \
            filepath + "  " + rSourceFile
 
     #echo "Create samplelist.txt and frequency file..."
