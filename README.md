@@ -83,17 +83,10 @@ Or clone the repo:
     $ git clone https://github.com/2waybene/GwasJP.git
     $ python setup.py install
     
-Contributing
-------------
 
-TBD
-
-Example
--------
-
-TBD
 ## Authors
-muver was conceptualized by Scott Lujan and Adam Burkholder. muver was written by Adam Burkholder and Christopher Lavender.
+
+GwasJP was designed and created by Jianying Li
 
 ## License
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
