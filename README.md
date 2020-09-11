@@ -92,3 +92,11 @@ Example
 -------
 
 TBD
+## Authors
+muver was conceptualized by Scott Lujan and Adam Burkholder. muver was written by Adam Burkholder and Christopher Lavender.
+
+## License
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+
+## Acknowledgments
+This package was created with [Cookiecutter](https://github.com/audreyr/cookiecutter) and the [audreyr/cookiecutter-pypackage](https://github.com/audreyr/cookiecutter-pypackage) project template.
