@@ -28,10 +28,10 @@ There are a few files need to be prepared outside this project
 
 ### Model step 1
 
-- **/rundir/rhtn/ pheno_data_rhtn.txt**
-- **/rundir/rhtn/rhtn_combined/forced_covars.txt**
-- **/rundir/rhtn/rhtn_combined/starting_covars.txt**
-- **/rundir/rhtn/rhtn_combined/phenotypes.txt**
+- **/someDir/prerequisite/pheno_data_rhtn.txt**
+- **/someDir/prerequisite/forced_covars.txt**
+- **/someDir/prerequisite/starting_covars.txt**
+- **/someDir/prerequisite/phenotypes.txt**
 - **~/local/accord/data/geno_data/unc.jj/post_qc.v3**
 
 ### Model step 2
