@@ -41,10 +41,10 @@ def accordWorkingDirSetup(rootdir, prerequisitesdir, projectname):
     prerequeistes is a directory that contains all the prerequisite files,
     currently prepared outside (rhtn(s) are prepared by John House) the pipeline.
 
-    /rundir/rhtn/pheno_data_rhtn.txt
-    /rundir/rhtn/rhtn_combined/forced_covars.txt
-    /rundir/rhtn/rhtn_combined/starting_covars.txt
-    /rundir/rhtn/rhtn_combined/phenotypes.txt
+    /someDir/prerequisite/pheno_data_rhtn.txt
+    /someDir/prerequisite/forced_covars.txt
+    /someDir/prerequisite/starting_covars.txt
+    /someDir/prerequisite/phenotypes.txt
 
     As of this moment, JYL -- FIXME
 
