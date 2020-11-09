@@ -32,9 +32,6 @@ setup(
       'Programming Language :: Python :: 3',
     ],
     keywords='',
-   # packages=find_packages(exclude=['docs', 'tests*']),
-   # include_package_data=True,
-    #scripts=['bin/king'],
     packages=find_packages(include=['docs', 'tests*', 'GwasdJP', 'GwasJP.wrappers']),
     include_package_data=True,
 

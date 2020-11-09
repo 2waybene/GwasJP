@@ -12,12 +12,16 @@ slurmInfo.append("#SBATCH --qos=normal")
 slurmInfo.append("#SBATCH --mail-type=END,FAIL")
 slurmInfo.append("#SBATCH --mail-user=li11@niehs.nih.gov")
 
-def getASLURMJob (jobFile, jobName, cmds, memory = 12000, runTimeallowed = "2-00:00" ):
+def getASLURMJob (jobFile, jobName, cmds, scriptDir, memory = 12000, runTimeallowed = "2-00:00" ):
     job    = jobName + ".job"
     output = jobName + ".out"
     errout = jobName + ".err"
 
-    dir = tempfile.mkdtemp()
+    ##=====This is a temp dir =============
+    #dir = tempfile.mkdtemp()
+    ##  John wants to keep the script file
+
+    dir = scriptDir
     file = dir+"/" + jobFile
     with open (file, 'w') as f:
         f.write("#!/bin/bash\n")
